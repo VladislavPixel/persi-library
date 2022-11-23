@@ -14,7 +14,7 @@
 
 _Аргументы:_ iterableData?, iterableKeys?;
 
-iterableData - объект  JavaScript или итерируемая структура, значения которой будут использоваться как values hashTable.
+iterableData - объект JavaScript или итерируемая структура, значения которой будут использоваться как values hashTable.
 
 iterableKeys - итерируемая структура, значения которой будут использоваться как keys hashTable.
 
@@ -179,7 +179,6 @@ const v1 = hashTable.versions.at("-1");
 
 const v0 = hashTable.versions.at("-1");
 ```
-
 
 ### Работа с историей изменений в рамках hashTable.
 
@@ -804,7 +803,6 @@ new DoublyLinkedList();
 #### **-getIteratorForReverseValueLastVersion() { }**
 
 Возвращает итератор, который реализует проход по элементам последней версии начиная с хвоста.
-
 
 ### Работа с версиями в рамках DoublyLinkedList.
 

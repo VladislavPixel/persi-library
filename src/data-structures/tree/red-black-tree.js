@@ -11,289 +11,335 @@ import getResultComposeMiddleware from "../../utils/get-result-compose-middlewar
 import isIdentical from "../../utils/is-identical";
 
 class RedBlackTree {
-	constructor() {
-		this.root = null;
-		this.length = 0;
-		this.versions = new StoreVersions(this.constructor.name);
-		this.historyChanges = new HistoryChanges();
-		this.#initialization();
-	}
+  constructor() {
+    this.root = null;
+    this.length = 0;
+    this.versions = new StoreVersions(this.constructor.name);
+    this.historyChanges = new HistoryChanges();
+    this.#initialization();
+  }
+
+  [Symbol.iterator]() {
+    return new IteratorForDepthForward(this.root);
+  }
+
+  getIteratorForDepthSymmetrical() {
+    return new IteratorForDepthSymmetrical(this.root);
+  }
+
+  getIteratorForDepthReverse() {
+    return new IteratorForDepthReverse(this.root);
+  }
 
-	[Symbol.iterator]() {
-		return new IteratorForDepthForward(this.root);
-	}
+  getIteratorForWidthTraversal() {
+    return new IteratorForWidthTraversal(this.root);
+  }
+
+  #getIteratorForFindMethod(key) {
+    return new IteratorForFindMethod(this.root, key);
+  }
 
-	getIteratorForDepthSymmetrical() {
-		return new IteratorForDepthSymmetrical(this.root);
-	}
+  get totalVersions() {
+    return this.versions.totalVersions;
+  }
 
-	getIteratorForDepthReverse() {
-		return new IteratorForDepthReverse(this.root);
-	}
+  #initialization() {
+    const itemHistory = {
+      type: "initializing the data structure",
+      nameMethod: "initialization",
+      iterable: new Map(),
+      accessModifier: "private",
+      currentVersion: this.totalVersions
+    };
 
-	getIteratorForWidthTraversal() {
-		return new IteratorForWidthTraversal(this.root);
-	}
+    this.historyChanges.registerChange(itemHistory);
 
-	#getIteratorForFindMethod(key) {
-		return new IteratorForFindMethod(this.root, key);
-	}
+    this.versions.registerVersion(this.root, this.totalVersions);
 
-	get totalVersions() {
-		return this.versions.totalVersions;
-	}
+    this.versions.totalVersions++;
+  }
+
+  #isBrokeRule(parent, node) {
+    if (parent === null) {
+      return false;
+    }
+
+    return parent.isRed === true && node.isRed === true;
+  }
+
+  #checkGrandson(grandson, parent, grandfather) {
+    const isLeftParent = grandfather.left === parent ? true : false;
+
+    const isLeftGrandson = parent.left === grandson ? true : false;
+
+    return {
+      isExternalGrandson: isLeftParent === isLeftGrandson,
+      isLeft: isLeftGrandson
+    };
+  }
+
+  #isTriggerColor(node) {
+    return (
+      !node.isRed &&
+      node.left !== null &&
+      node.left.isRed &&
+      node.right !== null &&
+      node.right.isRed
+    );
+  }
+
+  #updateColorsForNodeAndChildrens(node) {
+    if (node !== this.root) {
+      node.isRed = true;
+    }
+
+    node.left.isRed = false;
+
+    node.right.isRed = false;
+  }
+
+  insert(value, key, options) {
+    const mapArgumentsForHistory = new Map().set(1, value).set(2, key);
+
+    const itemHistory = {
+      type: "adding",
+      nameMethod:
+        options && options.nameMethodForHistory
+          ? options.nameMethodForHistory
+          : "insert",
+      iterable: mapArgumentsForHistory,
+      accessModifier: "public",
+      currentVersion: this.totalVersions
+    };
+
+    this.historyChanges.registerChange(itemHistory);
 
-	#initialization() {
-		const itemHistory = {
-			type: "initializing the data structure",
-			nameMethod: "initialization",
-			iterable: new Map(),
-			accessModifier: "private",
-			currentVersion: this.totalVersions
-		};
+    const newNode = new NodePersistentTree(value, key);
 
-		this.historyChanges.registerChange(itemHistory);
+    if (this.length === 0) {
+      newNode.isRed = false;
 
-		this.versions.registerVersion(this.root, this.totalVersions);
+      this.root = newNode;
 
-		this.versions.totalVersions++;
-	}
+      this.versions.registerVersion(this.root, this.totalVersions);
 
-	#isBrokeRule(parent, node) {
-		if (parent === null) {
-			return false;
-		}
+      this.length++;
 
-		return parent.isRed === true && node.isRed === true;
-	}
+      this.versions.totalVersions++;
 
-	#checkGrandson(grandson, parent, grandfather) {
-		const isLeftParent = grandfather.left === parent ? true : false;
+      return this.length;
+    }
 
-		const isLeftGrandson = parent.left === grandson ? true : false;
+    const recLookPlaceAndInsert = (currentNode) => {
+      if (currentNode === null) {
+        return { children: newNode, brokeRuleStatus: null, grandson: null };
+      }
 
-		return { isExternalGrandson: isLeftParent === isLeftGrandson, isLeft: isLeftGrandson };
-	}
+      const isLeftNodeNext = key < currentNode.key ? true : false;
 
-	#isTriggerColor(node) {
-		return !node.isRed && node.left !== null && node.left.isRed && node.right !== null && node.right.isRed;
-	}
+      const nextNode = isLeftNodeNext ? currentNode.left : currentNode.right;
 
-	#updateColorsForNodeAndChildrens(node) {
-		if (node !== this.root) {
-			node.isRed = true;
-		}
+      const { children, brokeRuleStatus, grandson } =
+        recLookPlaceAndInsert(nextNode);
 
-		node.left.isRed = false;
+      const cloneCurrentNode = currentNode.getClone();
 
-		node.right.isRed = false;
-	}
+      if (isLeftNodeNext) {
+        cloneCurrentNode.left = children;
+      } else {
+        cloneCurrentNode.right = children;
+      }
 
-	insert(value, key, options) {
-		const mapArgumentsForHistory = new Map().set(1, value).set(2, key);
+      if (brokeRuleStatus === null) {
+        if (this.#isBrokeRule(cloneCurrentNode, children)) {
+          return {
+            children: cloneCurrentNode,
+            brokeRuleStatus: true,
+            grandson: children
+          };
+        }
 
-		const itemHistory = {
-			type: "adding",
-			nameMethod: options && options.nameMethodForHistory ? options.nameMethodForHistory : "insert",
-			iterable: mapArgumentsForHistory,
-			accessModifier: "public",
-			currentVersion: this.totalVersions
-		};
+        return {
+          children: cloneCurrentNode,
+          brokeRuleStatus: false,
+          grandson: children
+        };
+      }
 
-		this.historyChanges.registerChange(itemHistory);
+      if (brokeRuleStatus === false) {
+        return {
+          children: cloneCurrentNode,
+          brokeRuleStatus: null,
+          grandson: children
+        };
+      }
 
-		const newNode = new NodePersistentTree(value, key);
+      if (this.#isTriggerColor(cloneCurrentNode)) {
+        this.#updateColorsForNodeAndChildrens(cloneCurrentNode);
 
-		if (this.length === 0) {
-			newNode.isRed = false;
+        return {
+          children: cloneCurrentNode,
+          brokeRuleStatus: null,
+          grandson: children
+        };
+      }
 
-			this.root = newNode;
+      const { isExternalGrandson, isLeft } = this.#checkGrandson(
+        grandson,
+        children,
+        cloneCurrentNode
+      );
 
-			this.versions.registerVersion(this.root, this.totalVersions);
+      cloneCurrentNode.isRed = !cloneCurrentNode.isRed;
 
-			this.length++;
+      if (isExternalGrandson) {
+        children.isRed = !children.isRed;
 
-			this.versions.totalVersions++;
+        if (isLeft) {
+          this.#ror(cloneCurrentNode, children);
+        } else {
+          this.#rol(cloneCurrentNode, children);
+        }
 
-			return this.length;
-		}
+        return { children, brokeRuleStatus: null, grandson: null };
+      }
 
-		const recLookPlaceAndInsert = (currentNode) => {
-			if (currentNode === null) {
-				return { children: newNode, brokeRuleStatus: null, grandson: null };
-			}
+      grandson.isRed = !grandson.isRed;
 
-			const isLeftNodeNext = key < currentNode.key ? true : false;
+      if (isLeft) {
+        this.#rorSmall(cloneCurrentNode, children, grandson);
 
-			const nextNode = isLeftNodeNext ? currentNode.left : currentNode.right;
+        this.#rol(cloneCurrentNode, grandson);
+      } else {
+        this.#rolSmall(cloneCurrentNode, children, grandson);
 
-			const { children, brokeRuleStatus, grandson } = recLookPlaceAndInsert(nextNode);
+        this.#ror(cloneCurrentNode, grandson);
+      }
 
-			const cloneCurrentNode = currentNode.getClone();
+      return { children: grandson, brokeRuleStatus: null, grandson: null };
+    };
 
-			if (isLeftNodeNext) {
-				cloneCurrentNode.left = children;
+    this.root = recLookPlaceAndInsert(this.root).children;
 
-			} else {
-				cloneCurrentNode.right = children;
-			}
+    if (this.root && this.root.isRed) {
+      this.root.isRed = false;
+    }
 
-			if (brokeRuleStatus === null) {
-				if (this.#isBrokeRule(cloneCurrentNode, children)) {
-					return { children: cloneCurrentNode, brokeRuleStatus: true, grandson: children };
-				}
+    this.versions.registerVersion(this.root, this.totalVersions);
 
-				return { children: cloneCurrentNode, brokeRuleStatus: false, grandson: children };
-			}
+    this.length++;
 
-			if (brokeRuleStatus === false) {
-				return { children: cloneCurrentNode, brokeRuleStatus: null, grandson: children };
-			}
+    this.versions.totalVersions++;
 
-			if (this.#isTriggerColor(cloneCurrentNode)) {
-				this.#updateColorsForNodeAndChildrens(cloneCurrentNode);
+    return this.length;
+  }
 
-				return { children: cloneCurrentNode, brokeRuleStatus: null, grandson: children };
-			}
+  #rorSmall(grandfather, parent, grandson) {
+    parent.left = grandson.right;
 
-			const { isExternalGrandson, isLeft } = this.#checkGrandson(grandson, children, cloneCurrentNode);
+    grandson.right = parent;
 
-			cloneCurrentNode.isRed = !cloneCurrentNode.isRed;
+    grandfather.right = grandson;
+  }
 
-			if (isExternalGrandson) {
-				children.isRed = !children.isRed;
+  #rolSmall(grandfather, parent, grandson) {
+    grandfather.left = grandson;
 
-				if (isLeft) {
-					this.#ror(cloneCurrentNode, children);
-				} else {
-					this.#rol(cloneCurrentNode, children);
-				}
+    parent.right = grandson.left;
 
-				return { children, brokeRuleStatus: null, grandson: null };
-			}
+    grandson.left = parent;
+  }
 
-			grandson.isRed = !grandson.isRed;
+  #ror(grandfather, parent) {
+    grandfather.left = parent.right;
 
-			if (isLeft) {
-				this.#rorSmall(cloneCurrentNode, children, grandson);
+    parent.right = grandfather;
+  }
 
-				this.#rol(cloneCurrentNode, grandson);
+  #rol(grandfather, parent) {
+    grandfather.right = parent.left;
 
-			} else {
-				this.#rolSmall(cloneCurrentNode, children, grandson);
+    parent.left = grandfather;
+  }
 
-				this.#ror(cloneCurrentNode, grandson);
-			}
+  findByKey(key) {
+    if (this.length === 0) {
+      throw new Error(
+        "Method is findByKey is not suppoeted in Empty RedBlackTree."
+      );
+    }
 
-			return { children: grandson, brokeRuleStatus: null, grandson: null };
-		}
+    const iterator = this.#getIteratorForFindMethod(key);
 
-		this.root = recLookPlaceAndInsert(this.root).children;
+    for (const node of iterator) {
+      if (isIdentical(node.key, key)) {
+        return clone(node.value);
+      }
+    }
 
-		if (this.root && this.root.isRed) {
-			this.root.isRed = false;
-		}
+    return null;
+  }
 
-		this.versions.registerVersion(this.root, this.totalVersions);
+  get(numberVersion, pathNodeValue, middlewareS) {
+    if (this.length === 0) {
+      throw new Error("Method - get is not supported in Empty tree.");
+    }
 
-		this.length++;
+    if (numberVersion === 0) {
+      return null;
+    }
 
-		this.versions.totalVersions++;
+    const mapArgumentsForHistory = new Map()
+      .set(1, numberVersion)
+      .set(2, pathNodeValue)
+      .set(3, middlewareS);
 
-		return this.length;
-	}
+    const isNumber = typeof numberVersion === "number";
 
-	#rorSmall(grandfather, parent, grandson) {
-		parent.left = grandson.right;
+    if (
+      !isNumber ||
+      pathNodeValue === undefined ||
+      numberVersion < 0 ||
+      numberVersion > this.totalVersions - 1
+    ) {
+      throw new Error(
+        `Operation get() is not available for version - ${numberVersion}. The request must contain a valid path (2 argument). Version should be smaller ${this.totalVersions} and start off 0.`
+      );
+    }
 
-		grandson.right = parent;
+    const itemHistory = {
+      type: "getting the value",
+      nameMethod: "get",
+      iterable: mapArgumentsForHistory,
+      accessModifier: "public",
+      currentVersion: this.totalVersions
+    };
 
-		grandfather.right = grandson;
-	}
+    this.historyChanges.registerChange(itemHistory);
 
-	#rolSmall(grandfather, parent, grandson) {
-		grandfather.left = grandson;
+    if (middlewareS === undefined) {
+      const node = this.versions.at(numberVersion);
 
-		parent.right = grandson.left;
+      const { value, lastSegment } = node.getValueByPath(pathNodeValue);
 
-		grandson.left = parent;
-	}
+      return value[lastSegment];
+    }
 
-	#ror(grandfather, parent) {
-		grandfather.left = parent.right;
+    let nodeForVersion = this.versions.at(numberVersion);
 
-		parent.right = grandfather;
-	}
+    nodeForVersion = getResultComposeMiddleware.call(
+      nodeForVersion,
+      middlewareS
+    );
 
-	#rol(grandfather, parent) {
-		grandfather.right = parent.left;
+    if (nodeForVersion === null) {
+      throw new Error("The node was not found.");
+    }
 
-		parent.left = grandfather;
-	}
+    const { value, lastSegment } = nodeForVersion.getValueByPath(pathNodeValue);
 
-	findByKey(key) {
-		if (this.length === 0) {
-			throw new Error("Method is findByKey is not suppoeted in Empty RedBlackTree.");
-		}
-
-		const iterator = this.#getIteratorForFindMethod(key);
-
-		for (const node of iterator) {
-			if (isIdentical(node.key, key)) {
-				return clone(node.value);
-			}
-		}
-
-		return null;
-	}
-
-	get(numberVersion, pathNodeValue, middlewareS) {
-		if (this.length === 0) {
-			throw new Error("Method - get is not supported in Empty tree.");
-		}
-
-		if (numberVersion === 0) {
-			return null;
-		}
-
-		const mapArgumentsForHistory = new Map().set(1, numberVersion).set(2, pathNodeValue).set(3, middlewareS);
-
-		const isNumber = typeof numberVersion === "number";
-
-		if (!isNumber || pathNodeValue === undefined || numberVersion < 0 || numberVersion > this.totalVersions - 1) {
-			throw new Error(`Operation get() is not available for version - ${numberVersion}. The request must contain a valid path (2 argument). Version should be smaller ${this.totalVersions} and start off 0.`);
-		}
-
-		const itemHistory = {
-			type: "getting the value",
-			nameMethod: "get",
-			iterable: mapArgumentsForHistory,
-			accessModifier: "public",
-			currentVersion: this.totalVersions
-		};
-
-		this.historyChanges.registerChange(itemHistory);
-
-		if (middlewareS === undefined) {
-			const node = this.versions.at(numberVersion);
-
-			const { value, lastSegment } = node.getValueByPath(pathNodeValue);
-
-			return value[lastSegment];
-		}
-
-		let nodeForVersion = this.versions.at(numberVersion);
-
-		nodeForVersion = getResultComposeMiddleware.call(nodeForVersion, middlewareS);
-
-		if (nodeForVersion === null) {
-			throw new Error("The node was not found.");
-		}
-
-		const { value, lastSegment } = nodeForVersion.getValueByPath(pathNodeValue);
-
-		return value[lastSegment];
-	}
+    return value[lastSegment];
+  }
 }
 
 export default RedBlackTree;

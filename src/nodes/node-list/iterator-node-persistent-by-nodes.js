@@ -1,25 +1,25 @@
 class IteratorNodePersistentByNodes {
-	#nodePersistent;
+  #nodePersistent;
 
-	constructor(node) {
-		this.#nodePersistent = node;
-	}
+  constructor(node) {
+    this.#nodePersistent = node;
+  }
 
-	[Symbol.iterator]() {
-		return this;
-	}
+  [Symbol.iterator]() {
+    return this;
+  }
 
-	next() {
-		if (this.#nodePersistent === null) {
-			return { value: undefined, done: true };
-		}
+  next() {
+    if (this.#nodePersistent === null) {
+      return { value: undefined, done: true };
+    }
 
-		const currentNode = this.#nodePersistent;
+    const currentNode = this.#nodePersistent;
 
-		this.#nodePersistent = this.#nodePersistent.next;
+    this.#nodePersistent = this.#nodePersistent.next;
 
-		return { value: currentNode, done: false };
-	}
+    return { value: currentNode, done: false };
+  }
 }
 
 export default IteratorNodePersistentByNodes;

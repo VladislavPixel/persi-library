@@ -1,37 +1,37 @@
 import clone from "../../utils/clone";
 
 class IteratorEntries {
-	#root;
+  #root;
 
-	#length;
+  #length;
 
-	#index;
+  #index;
 
-	constructor({ root, length }) {
-		this.#root = root;
-		this.#length = length;
-		this.#index = 0;
-	}
+  constructor({ root, length }) {
+    this.#root = root;
+    this.#length = length;
+    this.#index = 0;
+  }
 
-	[Symbol.iterator]() {
-		return this;
-	}
+  [Symbol.iterator]() {
+    return this;
+  }
 
-	next() {
-		if (this.#index === this.#length) {
-			return { value: undefined, done: true };
-		}
+  next() {
+    if (this.#index === this.#length) {
+      return { value: undefined, done: true };
+    }
 
-		const node = this.#root.findByKey(this.#index);
+    const node = this.#root.findByKey(this.#index);
 
-		const value = node ? node.value : node;
+    const value = node ? node.value : node;
 
-		const cloneValue = clone(value);
+    const cloneValue = clone(value);
 
-		this.#index++;
+    this.#index++;
 
-		return { value: [cloneValue, cloneValue], done: false };
-	}
+    return { value: [cloneValue, cloneValue], done: false };
+  }
 }
 
 export default IteratorEntries;

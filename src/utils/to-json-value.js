@@ -1,35 +1,35 @@
 const toJSONValue = (value) => {
-	if (typeof value !== "object" && typeof value !== "function") {
-		return value;
-	}
+  if (typeof value !== "object" && typeof value !== "function") {
+    return value;
+  }
 
-	const saveToJSONFunction = Function.prototype["toJSON"];
+  const saveToJSONFunction = Function.prototype["toJSON"];
 
-	function toJSON() {
-		return `function(){}`;
-	}
+  function toJSON() {
+    return `function(){}`;
+  }
 
-	Function.prototype["toJSON"] = toJSON;
+  Function.prototype["toJSON"] = toJSON;
 
-	let result = "";
+  let result = "";
 
-	if (value instanceof Map) {
-		for (const arr of value.entries()) {
-			result += `${JSON.stringify(arr[1])};`;
-		}
-	}
+  if (value instanceof Map) {
+    for (const arr of value.entries()) {
+      result += `${JSON.stringify(arr[1])};`;
+    }
+  }
 
-	if (value instanceof Set) {
-		for (const valueSet of value.values()) {
-			result += `${JSON.stringify(valueSet)};`;
-		}
-	}
+  if (value instanceof Set) {
+    for (const valueSet of value.values()) {
+      result += `${JSON.stringify(valueSet)};`;
+    }
+  }
 
-	result += JSON.stringify(value);
+  result += JSON.stringify(value);
 
-	Function.prototype["toJSON"] = saveToJSONFunction;
+  Function.prototype["toJSON"] = saveToJSONFunction;
 
-	return result;
-}
+  return result;
+};
 
 export default toJSONValue;

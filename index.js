@@ -11,13 +11,13 @@ import DecQueue from "./src/data-structures/list/dec-queue";
 import Stack from "./src/data-structures/list/stack";
 
 export {
-	HashTable,
-	RedBlackTree,
-	SetStructure,
-	OneWayLinkedList,
-	TwoWayLinkedList,
-	DoublyLinkedList,
-	Queue,
-	DecQueue,
-	Stack
+  HashTable,
+  RedBlackTree,
+  SetStructure,
+  OneWayLinkedList,
+  TwoWayLinkedList,
+  DoublyLinkedList,
+  Queue,
+  DecQueue,
+  Stack
 };

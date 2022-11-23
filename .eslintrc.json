@@ -1,0 +1,73 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": "standard-with-typescript",
+  "overrides": [],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": ["./tsconfig.json"]
+  },
+  "rules": {
+    "no-var": "error",
+    "semi": [2, "always"],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "quotes": [
+      "error",
+      "double",
+      { "avoidEscape": true, "allowTemplateLiterals": true }
+    ],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "never"
+      }
+    ],
+    "lines-between-class-members": ["error", "always"],
+    "strict-boolean-expressions": 0,
+    "no-new-func": 0,
+    "@typescript-eslint/lines-between-class-members": [
+      "error",
+      "always",
+      { "exceptAfterOverload": true }
+    ],
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        "multiline": {
+          "delimiter": "semi",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "semi",
+          "requireLast": false
+        },
+        "multilineDetection": "brackets"
+      }
+    ],
+    "@typescript-eslint/indent": ["error", 2, { "SwitchCase": 1 }],
+    "@typescript-eslint/semi": [2, "always"],
+    "@typescript-eslint/quotes": [
+      "error",
+      "double",
+      { "avoidEscape": true, "allowTemplateLiterals": true }
+    ],
+    "@typescript-eslint/space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "never"
+      }
+    ],
+    "@typescript-eslint/strict-boolean-expressions": 0,
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "@typescript-eslint/restrict-template-expressions": 0,
+    "@typescript-eslint/method-signature-style": ["error", "method"],
+    "@typescript-eslint/no-implied-eval": 0
+  }
+}
