@@ -128,7 +128,7 @@ class NodePersistent<T> implements INodePersistent<T> {
     return { updatedNode: node, firstNode: first, lastNode: last };
   }
 
-  getClone() {
+  getClone(): INodePersistent<T> {
     const cloneNode = Object.assign(new NodePersistent(0), this);
 
     clone.value = clone(clone.value);

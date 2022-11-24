@@ -8,17 +8,38 @@ import {
   STACK,
   RED_BLACK_TREE,
   SET_STRUCTURE
-} from "../utils/constants";
+} from "../utils/constants/index";
 
-class StoreVersions {
-  constructor(typeStructure) {
+import type {
+	IItemVersion,
+	IStoreVersions
+} from "./types/interfaces";
+
+import type { IndexForAtMethod } from "../interafaces";
+import type {
+	INodePersistentTree,
+	INodePersistent
+} from "../nodes/types/interfaces"
+
+export type ValueTypeForRegisterVersion<T> = T extends typeof SET_STRUCTURE ? INodePersistentTree : T extends typeof RED_BLACK_TREE ? INodePersistentTree : INodePersistent;
+
+class StoreVersions<T> implements IStoreVersions<T> {
+	typeStructure: T;
+
+	selectedVersion: number;
+
+	totalVersions: number;
+
+	snapshots: IItemVersion<T>[];
+
+  constructor(typeStructure: T) {
     this.typeStructure = typeStructure;
     this.selectedVersion = 0;
     this.totalVersions = 0;
     this.snapshots = [];
   }
 
-  #getCorrectIndex(indexVersion) {
+  #getCorrectIndex(indexVersion?: IndexForAtMethod): number {
     if (indexVersion === undefined) {
       return this.snapshots.length - 1;
     }
@@ -74,7 +95,7 @@ class StoreVersions {
     return -1;
   }
 
-  #atForHashTable(indexVersion) {
+  #atForHashTable(indexVersion?: IndexForAtMethod): null | INodePersistent {
     const index = this.#getCorrectIndex(indexVersion);
 
     const version = this.snapshots[index];
@@ -86,6 +107,10 @@ class StoreVersions {
         )}.`
       );
     }
+
+		if (version.value === null) {
+			return version.value;
+		}
 
     const cloneVersion = version.value.getClone();
 
@@ -160,7 +185,7 @@ class StoreVersions {
     return clone;
   }
 
-  #atForPointerMachineModel(indexVersion) {
+  #atForPointerMachineModel(indexVersion?: IndexForAtMethod) {
     const index = this.#getCorrectIndex(indexVersion);
 
     if (index < 0 || index > this.totalVersions - 1) {
@@ -204,7 +229,7 @@ class StoreVersions {
     return nodeForVersion;
   }
 
-  at(indexVersion) {
+  at(indexVersion: IndexForAtMethod) {
     if (this.snapshots.length === 0) {
       throw new Error(
         "The versions store is Empty. Operation at() is not supported."
@@ -230,13 +255,13 @@ class StoreVersions {
     }
   }
 
-  registerVersion(value, numberVersion) {
+  registerVersion(value: null | ValueTypeForRegisterVersion<T>, numberVersion: number): number {
     this.snapshots.push({ value, version: numberVersion });
 
     return this.snapshots.length;
   }
 
-  removeVersions() {
+  removeVersions(): number {
     this.totalVersions = 0;
 
     this.snapshots = [];

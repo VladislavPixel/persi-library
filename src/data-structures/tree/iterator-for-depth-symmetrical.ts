@@ -4,7 +4,9 @@ import type {
 } from "../types/interfaces";
 import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
-class IteratorForDepthSymmetrical<T, N> implements IIteratorForTraversalTree<T, N> {
+class IteratorForDepthSymmetrical<T, N>
+  implements IIteratorForTraversalTree<T, N>
+{
   #tree: null | INodePersistentTree<T, N>;
 
   #arrayNodes: INodePersistentTree<T, N>[];

@@ -12,7 +12,13 @@ class ItemHistory implements IItemHistory {
 
   iterable: Map<number, unknown>;
 
-  constructor(type: string, nameMethod: string, iterable: Map<number, unknown>, accessModifier: string, currentVersion: number) {
+  constructor(
+    type: string,
+    nameMethod: string,
+    iterable: Map<number, unknown>,
+    accessModifier: string,
+    currentVersion: number
+  ) {
     this.type = type;
     this.nameMethod = nameMethod;
     this.iterable = iterable;

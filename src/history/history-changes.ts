@@ -1,9 +1,11 @@
 import ItemHistory from "./item-history";
 
 import type {
-  IHistoryChanges,
-  IItemHistory
+	IHistoryChanges,
+	IItemHistory
 } from "./types/interfaces";
+
+import type { IndexForAtMethod } from "../interafaces";
 
 class HistoryChanges implements IHistoryChanges {
   #selectedIndexHistory: number;
@@ -15,7 +17,7 @@ class HistoryChanges implements IHistoryChanges {
     this.#arrHistoryChanges = [];
   }
 
-  #getCorrectIndex(indexChange) {
+  #getCorrectIndex(indexChange?: IndexForAtMethod): number {
     if (indexChange === undefined) {
       return this.#arrHistoryChanges.length - 1;
     }
@@ -37,7 +39,7 @@ class HistoryChanges implements IHistoryChanges {
     return -1;
   }
 
-  at(indexChange) {
+  at(indexChange: IndexForAtMethod): IItemHistory {
     if (this.#arrHistoryChanges.length === 0) {
       throw new Error(
         "The change history is empty. Operation at() version history is not supported."
@@ -61,7 +63,7 @@ class HistoryChanges implements IHistoryChanges {
     return change;
   }
 
-  display() {
+  display(): void {
     if (this.#arrHistoryChanges.length === 0) {
       throw new Error(
         "The change history is empty. Operation display() history is not supported."
@@ -83,7 +85,7 @@ class HistoryChanges implements IHistoryChanges {
     iterable,
     accessModifier,
     currentVersion
-  }) {
+  }: Omit<IItemHistory, "toJSON" | "getSmallReport">): number {
     const itemHistory = new ItemHistory(
       type,
       nameMethod,
@@ -97,7 +99,7 @@ class HistoryChanges implements IHistoryChanges {
     return this.#arrHistoryChanges.length;
   }
 
-  deleteFirstItemHistory() {
+  deleteFirstItemHistory(): undefined | IItemHistory {
     const item = this.#arrHistoryChanges.pop();
 
     return item;

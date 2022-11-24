@@ -22,23 +22,29 @@ import type {
   IOptionsForInsertRedBlackTree
 } from "../types/interfaces";
 
+import type { IHistoryChanges } from "../../history/history-changes";
+
 type ResultTypeForRecLookPlaceAndInsert<T = unknown, N = unknown> = {
   children: INodePersistentTree<T, N>;
   brokeRuleStatus: null | boolean;
   grandson: null | INodePersistentTree<T, N>;
-}
+};
 
 type ResultTypeCheckGrandson = {
   isExternalGrandson: boolean;
   isLeft: boolean;
-}
+};
 
-export type CallbackFnMiddleware<T, N> = (tree: INodePersistentTree<T, N>) => null | INodePersistentTree<T, N>;
+export type CallbackFnMiddleware<T, N> = (
+  tree: INodePersistentTree<T, N>
+) => null | INodePersistentTree<T, N>;
 
 class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
   root: null | INodePersistentTree<T, N>;
-  
+
   length: number;
+
+	historyChanges: IHistoryChanges;
 
   constructor() {
     this.root = null;
@@ -88,7 +94,10 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     this.versions.totalVersions++;
   }
 
-  #isBrokeRule(parent: INodePersistentTree<T, N>, node: INodePersistentTree<T, N>): boolean {
+  #isBrokeRule(
+    parent: INodePersistentTree<T, N>,
+    node: INodePersistentTree<T, N>
+  ): boolean {
     if (parent === null) {
       return false;
     }
@@ -96,7 +105,11 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     return parent.isRed === true && node.isRed === true;
   }
 
-  #checkGrandson(grandson: null | INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandfather: INodePersistentTree<T, N>): ResultTypeCheckGrandson {
+  #checkGrandson(
+    grandson: null | INodePersistentTree<T, N>,
+    parent: INodePersistentTree<T, N>,
+    grandfather: INodePersistentTree<T, N>
+  ): ResultTypeCheckGrandson {
     const isLeftParent = grandfather.left === parent;
 
     const isLeftGrandson = parent.left === grandson;
@@ -117,7 +130,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     );
   }
 
-  #updateColorsForNodeAndChildrens<V extends INodePersistentTree<T, N>>(node: V): void {
+  #updateColorsForNodeAndChildrens<V extends INodePersistentTree<T, N>>(
+    node: V
+  ): void {
     const correctNode = node as INodePersistentTreeWithTwoChildrens<V>;
 
     if (correctNode !== this.root) {
@@ -161,7 +176,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
       return this.length;
     }
 
-    const recLookPlaceAndInsert = (currentNode: null | INodePersistentTree<T, N>): ResultTypeForRecLookPlaceAndInsert<T, N> => {
+    const recLookPlaceAndInsert = (
+      currentNode: null | INodePersistentTree<T, N>
+    ): ResultTypeForRecLookPlaceAndInsert<T, N> => {
       if (currentNode === null) {
         return { children: newNode, brokeRuleStatus: null, grandson: null };
       }
@@ -236,7 +253,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
       }
 
       if (grandson === null) {
-        throw new Error("Grandson node is null. Unexpected error. The red-black tree is not working correctly.");
+        throw new Error(
+          "Grandson node is null. Unexpected error. The red-black tree is not working correctly."
+        );
       }
 
       grandson.isRed = !grandson.isRed;
@@ -269,7 +288,11 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     return this.length;
   }
 
-  #rorSmall(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandson: INodePersistentTree<T, N>): void {
+  #rorSmall(
+    grandfather: INodePersistentTree<T, N>,
+    parent: INodePersistentTree<T, N>,
+    grandson: INodePersistentTree<T, N>
+  ): void {
     parent.left = grandson.right;
 
     grandson.right = parent;
@@ -277,7 +300,11 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     grandfather.right = grandson;
   }
 
-  #rolSmall(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandson: INodePersistentTree<T, N>): void {
+  #rolSmall(
+    grandfather: INodePersistentTree<T, N>,
+    parent: INodePersistentTree<T, N>,
+    grandson: INodePersistentTree<T, N>
+  ): void {
     grandfather.left = grandson;
 
     parent.right = grandson.left;
@@ -285,13 +312,19 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     grandson.left = parent;
   }
 
-  #ror(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>): void {
+  #ror(
+    grandfather: INodePersistentTree<T, N>,
+    parent: INodePersistentTree<T, N>
+  ): void {
     grandfather.left = parent.right;
 
     parent.right = grandfather;
   }
 
-  #rol(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>): void {
+  #rol(
+    grandfather: INodePersistentTree<T, N>,
+    parent: INodePersistentTree<T, N>
+  ): void {
     grandfather.right = parent.left;
 
     parent.left = grandfather;
@@ -315,7 +348,11 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     return null;
   }
 
-  get(numberVersion: number, pathNodeValue: string, middlewareS?: CallbackFnMiddleware<T, N>[]): null | T {
+  get(
+    numberVersion: number,
+    pathNodeValue: string,
+    middlewareS?: CallbackFnMiddleware<T, N>[]
+  ): null | T {
     if (this.length === 0) {
       throw new Error("Method - get is not supported in Empty tree.");
     }
