@@ -1,21 +1,27 @@
-class IteratorForDepthSymmetrical {
-  #tree;
+import type {
+  IIteratorForTraversalTree,
+  TypeForResultNextMethodIteratorForTraversalTree
+} from "../types/interfaces";
+import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
-  #arrayNodes;
+class IteratorForDepthSymmetrical<T, N> implements IIteratorForTraversalTree<T, N> {
+  #tree: null | INodePersistentTree<T, N>;
 
-  #auxiliaryTree;
+  #arrayNodes: INodePersistentTree<T, N>[];
 
-  constructor(tree) {
+  #auxiliaryTree: null | INodePersistentTree<T, N>;
+
+  constructor(tree: null | INodePersistentTree<T, N>) {
     this.#tree = tree;
     this.#arrayNodes = [];
     this.#auxiliaryTree = this.#tree;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTraversalTree<T, N> {
     return this;
   }
 
-  next() {
+  next(): TypeForResultNextMethodIteratorForTraversalTree<T> {
     if (this.#auxiliaryTree === null && this.#arrayNodes.length === 0) {
       return { value: undefined, done: true };
     }

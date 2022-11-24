@@ -10,7 +10,36 @@ import clone from "../../utils/clone";
 import getResultComposeMiddleware from "../../utils/get-result-compose-middleware";
 import isIdentical from "../../utils/is-identical";
 
-class RedBlackTree {
+import type {
+  INodePersistentTree,
+  INodePersistentTreeWithTwoChildrens
+} from "../../nodes/types/interfaces";
+
+import type {
+  IRedBlackTree,
+  IIteratorForTraversalTree,
+  IIteratorForFindMethod,
+  IOptionsForInsertRedBlackTree
+} from "../types/interfaces";
+
+type ResultTypeForRecLookPlaceAndInsert<T = unknown, N = unknown> = {
+  children: INodePersistentTree<T, N>;
+  brokeRuleStatus: null | boolean;
+  grandson: null | INodePersistentTree<T, N>;
+}
+
+type ResultTypeCheckGrandson = {
+  isExternalGrandson: boolean;
+  isLeft: boolean;
+}
+
+export type CallbackFnMiddleware<T, N> = (tree: INodePersistentTree<T, N>) => null | INodePersistentTree<T, N>;
+
+class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
+  root: null | INodePersistentTree<T, N>;
+  
+  length: number;
+
   constructor() {
     this.root = null;
     this.length = 0;
@@ -19,27 +48,27 @@ class RedBlackTree {
     this.#initialization();
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthForward(this.root);
   }
 
-  getIteratorForDepthSymmetrical() {
+  getIteratorForDepthSymmetrical(): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthSymmetrical(this.root);
   }
 
-  getIteratorForDepthReverse() {
+  getIteratorForDepthReverse(): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthReverse(this.root);
   }
 
-  getIteratorForWidthTraversal() {
+  getIteratorForWidthTraversal(): IIteratorForTraversalTree<T, N> {
     return new IteratorForWidthTraversal(this.root);
   }
 
-  #getIteratorForFindMethod(key) {
+  #getIteratorForFindMethod(key: N): IIteratorForFindMethod<T, N> {
     return new IteratorForFindMethod(this.root, key);
   }
 
-  get totalVersions() {
+  get totalVersions(): number {
     return this.versions.totalVersions;
   }
 
@@ -59,7 +88,7 @@ class RedBlackTree {
     this.versions.totalVersions++;
   }
 
-  #isBrokeRule(parent, node) {
+  #isBrokeRule(parent: INodePersistentTree<T, N>, node: INodePersistentTree<T, N>): boolean {
     if (parent === null) {
       return false;
     }
@@ -67,7 +96,7 @@ class RedBlackTree {
     return parent.isRed === true && node.isRed === true;
   }
 
-  #checkGrandson(grandson, parent, grandfather) {
+  #checkGrandson(grandson: null | INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandfather: INodePersistentTree<T, N>): ResultTypeCheckGrandson {
     const isLeftParent = grandfather.left === parent;
 
     const isLeftGrandson = parent.left === grandson;
@@ -78,7 +107,7 @@ class RedBlackTree {
     };
   }
 
-  #isTriggerColor(node) {
+  #isTriggerColor(node: INodePersistentTree<T, N>): boolean {
     return (
       !node.isRed &&
       node.left !== null &&
@@ -88,17 +117,19 @@ class RedBlackTree {
     );
   }
 
-  #updateColorsForNodeAndChildrens(node) {
-    if (node !== this.root) {
-      node.isRed = true;
+  #updateColorsForNodeAndChildrens<V extends INodePersistentTree<T, N>>(node: V): void {
+    const correctNode = node as INodePersistentTreeWithTwoChildrens<V>;
+
+    if (correctNode !== this.root) {
+      correctNode.isRed = true;
     }
 
-    node.left.isRed = false;
+    correctNode.left.isRed = false;
 
-    node.right.isRed = false;
+    correctNode.right.isRed = false;
   }
 
-  insert(value, key, options) {
+  insert(value: T, key: N, options: IOptionsForInsertRedBlackTree): number {
     const mapArgumentsForHistory = new Map().set(1, value).set(2, key);
 
     const itemHistory = {
@@ -130,7 +161,7 @@ class RedBlackTree {
       return this.length;
     }
 
-    const recLookPlaceAndInsert = (currentNode) => {
+    const recLookPlaceAndInsert = (currentNode: null | INodePersistentTree<T, N>): ResultTypeForRecLookPlaceAndInsert<T, N> => {
       if (currentNode === null) {
         return { children: newNode, brokeRuleStatus: null, grandson: null };
       }
@@ -204,6 +235,10 @@ class RedBlackTree {
         return { children, brokeRuleStatus: null, grandson: null };
       }
 
+      if (grandson === null) {
+        throw new Error("Grandson node is null. Unexpected error. The red-black tree is not working correctly.");
+      }
+
       grandson.isRed = !grandson.isRed;
 
       if (isLeft) {
@@ -234,7 +269,7 @@ class RedBlackTree {
     return this.length;
   }
 
-  #rorSmall(grandfather, parent, grandson) {
+  #rorSmall(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandson: INodePersistentTree<T, N>): void {
     parent.left = grandson.right;
 
     grandson.right = parent;
@@ -242,7 +277,7 @@ class RedBlackTree {
     grandfather.right = grandson;
   }
 
-  #rolSmall(grandfather, parent, grandson) {
+  #rolSmall(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>, grandson: INodePersistentTree<T, N>): void {
     grandfather.left = grandson;
 
     parent.right = grandson.left;
@@ -250,19 +285,19 @@ class RedBlackTree {
     grandson.left = parent;
   }
 
-  #ror(grandfather, parent) {
+  #ror(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>): void {
     grandfather.left = parent.right;
 
     parent.right = grandfather;
   }
 
-  #rol(grandfather, parent) {
+  #rol(grandfather: INodePersistentTree<T, N>, parent: INodePersistentTree<T, N>): void {
     grandfather.right = parent.left;
 
     parent.left = grandfather;
   }
 
-  findByKey(key) {
+  findByKey(key: N): null | T {
     if (this.length === 0) {
       throw new Error(
         "Method is findByKey is not suppoeted in Empty RedBlackTree."
@@ -272,7 +307,7 @@ class RedBlackTree {
     const iterator = this.#getIteratorForFindMethod(key);
 
     for (const node of iterator) {
-      if (isIdentical(node.key, key)) {
+      if (node !== undefined && isIdentical(node.key, key)) {
         return clone(node.value);
       }
     }
@@ -280,7 +315,7 @@ class RedBlackTree {
     return null;
   }
 
-  get(numberVersion, pathNodeValue, middlewareS) {
+  get(numberVersion: number, pathNodeValue: string, middlewareS?: CallbackFnMiddleware<T, N>[]): null | T {
     if (this.length === 0) {
       throw new Error("Method - get is not supported in Empty tree.");
     }

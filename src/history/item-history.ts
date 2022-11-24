@@ -1,7 +1,18 @@
 import toJSONValue from "../utils/to-json-value";
+import type { IItemHistory } from "./types/interfaces";
 
-class ItemHistory {
-  constructor(type, nameMethod, iterable, accessModifier, currentVersion) {
+class ItemHistory implements IItemHistory {
+  type: string;
+
+  nameMethod: string;
+
+  accessModifier: string;
+
+  currentVersion: number;
+
+  iterable: Map<number, unknown>;
+
+  constructor(type: string, nameMethod: string, iterable: Map<number, unknown>, accessModifier: string, currentVersion: number) {
     this.type = type;
     this.nameMethod = nameMethod;
     this.iterable = iterable;
@@ -9,7 +20,7 @@ class ItemHistory {
     this.currentVersion = currentVersion;
   }
 
-  toJSON() {
+  toJSON(): string {
     let strArguments = "";
 
     for (const arrArgument of this.iterable) {
@@ -23,7 +34,7 @@ class ItemHistory {
     return str;
   }
 
-  getSmallReport() {
+  getSmallReport(): string {
     return `Method: ${this.nameMethod}; Message: ${this.type};`;
   }
 }

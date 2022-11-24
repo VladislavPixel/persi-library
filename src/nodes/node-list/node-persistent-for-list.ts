@@ -2,9 +2,20 @@ import IteratorNodePersistentByNodes from "./iterator-node-persistent-by-nodes";
 import IteratorReverseOverNodes from "./iterator-reverse-over-nodes";
 import clone from "../../utils/clone";
 import isIdentical from "../../utils/is-identical";
+import type { INodePersistent } from "../types/interfaces";
 
-class NodePersistent {
-  constructor(value) {
+class NodePersistent<T> implements INodePersistent<T> {
+  value: T;
+
+  next: null | INodePersistent<T>;
+
+  prev: null | INodePersistent<T>;
+
+  MAX_CHANGES: number;
+
+  changeLog: Map<>;
+
+  constructor(value: T) {
     this.value = value;
     this.next = null;
     this.prev = null;

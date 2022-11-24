@@ -18,7 +18,7 @@ class SetStructure extends RedBlackTree {
     return new IteratorOverNativeValues(this);
   }
 
-  get size() {
+  get size(): number {
     return this.length;
   }
 

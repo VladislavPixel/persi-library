@@ -5,9 +5,29 @@ import IteratorForWidthTraversal from "../../data-structures/tree/iterator-for-w
 import IteratorForFindMethod from "../../data-structures/tree/iterator-for-find-method";
 import clone from "../../utils/clone";
 import isIdentical from "../../utils/is-identical";
+import type { IHashTable } from "../../interafaces";
+import type {
+  INodePersistentTree,
+  TypeResultForMethodGetValueByPath
+} from "../types/interfaces";
 
-class NodePersistentTree {
-  constructor(value, key) {
+import type {
+  IIteratorForTraversalTree,
+  IIteratorForFindMethod
+} from "../../data-structures/types/interfaces";
+
+class NodePersistentTree<T, N> implements INodePersistentTree<T, N> {
+  value: T;
+
+  key: N;
+
+  left: null | INodePersistentTree<T, N>;
+
+  right: null | INodePersistentTree<T, N>;
+
+  isRed: boolean;
+
+  constructor(value: T, key: N) {
     this.value = value;
     this.key = key;
     this.left = null;
@@ -15,31 +35,31 @@ class NodePersistentTree {
     this.isRed = true;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthForward(this);
   }
 
-  getIteratorForDepthSymmetrical() {
+  getIteratorForDepthSymmetrical(): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthSymmetrical(this);
   }
 
-  getIteratorForDepthReverse() {
+  getIteratorForDepthReverse(): IIteratorForTraversalTree<T, N> {
     return new IteratorForDepthReverse(this);
   }
 
-  getIteratorForWidthTraversal() {
+  getIteratorForWidthTraversal(): IIteratorForTraversalTree<T, N> {
     return new IteratorForWidthTraversal(this);
   }
 
-  #getIteratorForFindMethod(key) {
+  #getIteratorForFindMethod(key: N): IIteratorForFindMethod<T, N> {
     return new IteratorForFindMethod(this, key);
   }
 
-  getCloneValue(valueNode) {
+  getCloneValue(valueNode: T): T {
     return clone(valueNode);
   }
 
-  getClone() {
+  getClone(): INodePersistentTree<T, N> {
     const cloneNode = Object.assign(new NodePersistentTree(0, 0), this);
 
     cloneNode.value = clone(cloneNode.value);
@@ -47,46 +67,58 @@ class NodePersistentTree {
     return cloneNode;
   }
 
-  getValueByPath(path) {
+  getValueByPath(path: string): TypeResultForMethodGetValueByPath<T> {
     const arrSegments = path.split("/");
 
-    let currentValue = this;
+    let currentNode = this;
 
-    currentValue.value = this.getCloneValue(currentValue.value);
+    let valueForCurrentNode = currentNode.value;
+
+    valueForCurrentNode = this.getCloneValue(valueForCurrentNode);
 
     for (let m = 0; m < arrSegments.length - 1; m++) {
-      if (currentValue === undefined) {
+      if (valueForCurrentNode === undefined) {
         throw new Error(
           "It is not possible to access the value in the specified path. The value does not contain such nesting."
         );
       }
 
-      currentValue = currentValue[arrSegments[m]];
+      const key = arrSegments[m];
+
+      if (typeof valueForCurrentNode === "object") {
+        const correctValue = valueForCurrentNode as IHashTable<T, string>;
+
+        valueForCurrentNode = correctValue[key];
+      } else {
+        throw new Error(
+          "It is not possible to access the value in the specified path. The value does not contain such nesting."
+        );
+      }
     }
 
-    if (currentValue === undefined) {
+    if (valueForCurrentNode === undefined) {
       throw new Error(
         "It is not possible to access the value in the specified path. The value does not contain such nesting."
       );
     }
 
-    if (typeof currentValue !== "object") {
+    if (typeof valueForCurrentNode !== "object") {
       throw new Error(
         "Writing a new value is not possible because the value does not meet the required levels."
       );
     }
 
     return {
-      value: currentValue,
+      value: valueForCurrentNode,
       lastSegment: arrSegments[arrSegments.length - 1]
     };
   }
 
-  findByKey(key) {
+  findByKey(key: N): null | INodePersistentTree<T, N> {
     const iterator = this.#getIteratorForFindMethod(key);
 
     for (const node of iterator) {
-      if (isIdentical(node.key, key)) {
+      if (node !== undefined && isIdentical(node.key, key)) {
         return node;
       }
     }

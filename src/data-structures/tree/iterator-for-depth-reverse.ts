@@ -1,24 +1,30 @@
-class IteratorForDepthReverse {
-  #tree;
+import type {
+  IIteratorForTraversalTree,
+  TypeForResultNextMethodIteratorForTraversalTree
+} from "../types/interfaces";
+import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
-  #arrayNodes;
+class IteratorForDepthReverse<T, N> implements IIteratorForTraversalTree<T, N> {
+  #tree: null | INodePersistentTree<T, N>;
 
-  #auxiliaryTree;
+  #arrayNodes: INodePersistentTree<T, N>[];
 
-  #lastWorkTreeNode;
+  #auxiliaryTree: null | INodePersistentTree<T, N>;
 
-  constructor(tree) {
+  #lastWorkTreeNode: null | undefined | INodePersistentTree<T, N>;
+
+  constructor(tree: null | INodePersistentTree<T, N>) {
     this.#tree = tree;
     this.#arrayNodes = [];
     this.#auxiliaryTree = this.#tree;
     this.#lastWorkTreeNode = null;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTraversalTree<T, N> {
     return this;
   }
 
-  next() {
+  next(): TypeForResultNextMethodIteratorForTraversalTree<T> {
     if (this.#arrayNodes.length === 0 && this.#auxiliaryTree === null) {
       return { value: undefined, done: true };
     }

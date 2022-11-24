@@ -1,18 +1,24 @@
-class IteratorForFindMethod {
-  #tree;
+import type { INodePersistentTree } from "../../nodes/types/interfaces";
+import type {
+  IIteratorForFindMethod,
+  TypeForResultNextMethodIteratorForFindMethod
+} from "../types/interfaces";
 
-  #key;
+class IteratorForFindMethod<T, N> implements IIteratorForFindMethod<T, N> {
+  #tree: null | INodePersistentTree<T, N>;
 
-  constructor(tree, key) {
+  #key: N;
+
+  constructor(tree: null | INodePersistentTree<T, N>, key: N) {
     this.#tree = tree;
     this.#key = key;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForFindMethod<T, N> {
     return this;
   }
 
-  next() {
+  next(): TypeForResultNextMethodIteratorForFindMethod<T, N> {
     if (this.#tree === null) {
       return { value: undefined, done: true };
     }

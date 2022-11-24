@@ -1,9 +1,14 @@
 import ItemHistory from "./item-history";
 
-class HistoryChanges {
-  #selectedIndexHistory;
+import type {
+  IHistoryChanges,
+  IItemHistory
+} from "./types/interfaces";
 
-  #arrHistoryChanges;
+class HistoryChanges implements IHistoryChanges {
+  #selectedIndexHistory: number;
+
+  #arrHistoryChanges: IItemHistory[];
 
   constructor() {
     this.#selectedIndexHistory = 0;
