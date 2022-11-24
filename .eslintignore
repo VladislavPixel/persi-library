@@ -1,5 +1,7 @@
 /dist
 
+/build-ts
+
 /.parcel-cache
 
 /.github

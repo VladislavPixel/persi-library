@@ -1,7 +1,7 @@
 import { PREFIX_LINK_TO_VALUE, PREFIX_LINK_TO_YOURSELF } from "./constants";
 
 function fastClone(value) {
-  if (!Boolean(value)) {
+  if (!value) {
     return value;
   }
 

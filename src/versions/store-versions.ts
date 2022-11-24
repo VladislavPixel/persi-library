@@ -114,7 +114,7 @@ class StoreVersions {
       return null;
     }
 
-    let updatedNode = node.applyListChanges(numberVersion);
+    const updatedNode = node.applyListChanges(numberVersion);
 
     updatedNode.next = this.#recApplyListChangeForNode(
       updatedNode.next,

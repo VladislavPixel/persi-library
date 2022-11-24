@@ -2,16 +2,18 @@
   "name": "persi",
   "version": "1.0.0",
   "description": "The library provides an API for creating persistent structural data.",
-  "main": "./dist/common.js",
+  "source": "./index.ts",
   "module": "./dist/main.js",
+  "main": "./dist/common.js",
   "type": "module",
-  "source": "./index.js",
+  "types": "./dist/types.d.ts",
   "scripts": {
     "start": "parcel",
     "build": "parcel build --no-source-maps --no-cache",
     "watch": "parcel watch",
     "format": "npx prettier --write .",
-		"eslint": "eslint ."
+    "eslint": "eslint .",
+    "tsbuild": "tsc"
   },
   "repository": {
     "type": "git",
@@ -33,9 +35,11 @@
     "@typescript-eslint/parser": "^5.44.0",
     "eslint": "^8.28.0",
     "eslint-config-standard": "^17.0.0",
+    "eslint-config-standard-with-typescript": "^23.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.5.1",
     "eslint-plugin-promise": "^6.1.1",
-    "parcel": "^2.8.0"
+    "parcel": "^2.8.0",
+    "typescript": "^4.9.3"
   }
 }

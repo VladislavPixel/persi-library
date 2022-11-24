@@ -13,7 +13,7 @@
   "rules": {
     "no-var": "error",
     "semi": [2, "always"],
-    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "indent": ["error", 2, { "SwitchCase": 1, "ignoredNodes": ["ConditionalExpression"] }],
     "quotes": [
       "error",
       "double",
@@ -30,6 +30,10 @@
     "lines-between-class-members": ["error", "always"],
     "strict-boolean-expressions": 0,
     "no-new-func": 0,
+    "no-useless-constructor": 0,
+    "no-self-compare": 0,
+    "dot-notation": 0,
+    "no-extend-native": 0,
     "@typescript-eslint/lines-between-class-members": [
       "error",
       "always",
@@ -49,7 +53,7 @@
         "multilineDetection": "brackets"
       }
     ],
-    "@typescript-eslint/indent": ["error", 2, { "SwitchCase": 1 }],
+    "@typescript-eslint/indent": ["error", 2, { "SwitchCase": 1, "ignoredNodes": ["ConditionalExpression"] }],
     "@typescript-eslint/semi": [2, "always"],
     "@typescript-eslint/quotes": [
       "error",

@@ -34,11 +34,9 @@ class SetStructure extends RedBlackTree {
     return new IteratorInInsertionOrder(this);
   }
 
-  forEach(callbackFn, thisArg) {
-    const correctThis = thisArg ? thisArg : this;
-
+  forEach(callbackFn, thisArg = this) {
     for (const value of this) {
-      callbackFn.call(correctThis, value, value, this);
+      callbackFn.call(thisArg, value, value, this);
     }
   }
 

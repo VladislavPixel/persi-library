@@ -68,9 +68,9 @@ class RedBlackTree {
   }
 
   #checkGrandson(grandson, parent, grandfather) {
-    const isLeftParent = grandfather.left === parent ? true : false;
+    const isLeftParent = grandfather.left === parent;
 
-    const isLeftGrandson = parent.left === grandson ? true : false;
+    const isLeftGrandson = parent.left === grandson;
 
     return {
       isExternalGrandson: isLeftParent === isLeftGrandson,
@@ -135,7 +135,7 @@ class RedBlackTree {
         return { children: newNode, brokeRuleStatus: null, grandson: null };
       }
 
-      const isLeftNodeNext = key < currentNode.key ? true : false;
+      const isLeftNodeNext = key < currentNode.key;
 
       const nextNode = isLeftNodeNext ? currentNode.left : currentNode.right;
 

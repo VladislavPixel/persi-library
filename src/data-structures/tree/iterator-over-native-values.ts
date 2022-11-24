@@ -26,7 +26,7 @@ class IteratorOverNativeValues {
 
     this.#index++;
 
-    return { value: value, done: false };
+    return { value, done: false };
   }
 }
 

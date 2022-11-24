@@ -1,3 +1,6 @@
+import NodePersistent from "../nodes/node-list/node-persistent-for-list";
+import NodePersistentTree from "../nodes/node-tree/node-persistent-for-tree";
+
 function getResultComposeMiddleware(middlewareS) {
   let result;
 

@@ -22,7 +22,7 @@ class IteratorForWidthTraversal {
       return { value: undefined, done: true };
     }
 
-    while (this.#arrayNodes.length) {
+    if (this.#arrayNodes.length) {
       const currentNode = this.#arrayNodes.shift();
 
       if (currentNode.left) {
