@@ -3,25 +3,35 @@ import HistoryChanges from "../../history/history-changes";
 import IteratorKeysAndValues from "./iterator-keys-and-values";
 import NodePersistent from "../../nodes/node-list/node-persistent-for-list";
 import clone from "../../utils/clone";
+import type { IHashTableStructure } from "../types/interfaces";
+import type { INodePersistent } from "../../nodes/types/interfaces";
+import type { IStoreVersions } from "../../versions/types/interfaces";
+import type { IHistoryChanges } from "../../history/types/interfaces";
+import type { IIterable, IHashTable } from "../../interafaces";
+import type { IteratorKeysAndValuesForHashTable } from "../types/interfaces";
 
-class HashTable {
-  #structure;
+class HashTable<T> implements IHashTableStructure<T> {
+  #structure: INodePersistent<T>;
 
-  constructor(iterableData, iterableKeys) {
+	versions: IStoreVersions<typeof this.constructor.name>;
+
+	historyChanges: IHistoryChanges;
+
+  constructor(iterableData: IIterable<T>, iterableKeys: IIterable<T>) {
     this.versions = new StoreVersions(this.constructor.name);
     this.historyChanges = new HistoryChanges();
     this.#structure = this.#initialization(iterableData, iterableKeys);
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IteratorKeysAndValuesForHashTable<T> {
     return new IteratorKeysAndValues(this.#structure);
   }
 
-  get totalVersions() {
+  get totalVersions(): number {
     return this.versions.totalVersions;
   }
 
-  #initialization(iterableData, iterableKeys) {
+  #initialization(iterableData: IIterable<T>, iterableKeys: IIterable<T>) {
     const mapArgumentsForHistory = new Map()
       .set(1, iterableData)
       .set(2, iterableKeys);
@@ -75,7 +85,7 @@ class HashTable {
       );
     }
 
-    const source = {};
+    const source: IHashTable<T> = {};
 
     const iteratorInitData = iterableData[Symbol.iterator]();
 

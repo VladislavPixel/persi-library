@@ -9,6 +9,9 @@ import NodePersistentTree from "../../nodes/node-tree/node-persistent-for-tree";
 import clone from "../../utils/clone";
 import getResultComposeMiddleware from "../../utils/get-result-compose-middleware";
 import isIdentical from "../../utils/is-identical";
+import type { IStoreVersions } from "../../versions/types/interfaces";
+import type { ValueTypeForRegisterVersion } from "../../versions/store-versions";
+import type { IHashTable } from "../../interafaces";
 
 import type {
   INodePersistentTree,
@@ -45,6 +48,8 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
   length: number;
 
   historyChanges: IHistoryChanges;
+
+	versions: IStoreVersions<typeof this.constructor.name>;
 
   constructor() {
     this.root = null;
@@ -89,7 +94,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
 
     this.historyChanges.registerChange(itemHistory);
 
-    this.versions.registerVersion(this.root, this.totalVersions);
+		const correctRoot = <ValueTypeForRegisterVersion<typeof this.constructor.name>><unknown>this.root;
+
+    this.versions.registerVersion(correctRoot, this.totalVersions);
 
     this.versions.totalVersions++;
   }
@@ -167,7 +174,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
 
       this.root = newNode;
 
-      this.versions.registerVersion(this.root, this.totalVersions);
+			const correctRoot = <ValueTypeForRegisterVersion<typeof this.constructor.name>><unknown>this.root;
+
+      this.versions.registerVersion(correctRoot, this.totalVersions);
 
       this.length++;
 
@@ -279,7 +288,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
       this.root.isRed = false;
     }
 
-    this.versions.registerVersion(this.root, this.totalVersions);
+		const correctRoot = <ValueTypeForRegisterVersion<typeof this.constructor.name>><unknown>this.root;
+
+    this.versions.registerVersion(correctRoot, this.totalVersions);
 
     this.length++;
 
@@ -392,9 +403,15 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
     if (middlewareS === undefined) {
       const node = this.versions.at(numberVersion);
 
+			if (node === null) {
+				throw new Error("Node is null. An error has occurred. Method get.");
+			}
+
       const { value, lastSegment } = node.getValueByPath(pathNodeValue);
 
-      return value[lastSegment];
+			const correctValue = value as IHashTable<T>;
+
+      return correctValue[lastSegment];
     }
 
     let nodeForVersion = this.versions.at(numberVersion);
@@ -410,7 +427,9 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
 
     const { value, lastSegment } = nodeForVersion.getValueByPath(pathNodeValue);
 
-    return value[lastSegment];
+		const correctValue = value as IHashTable<T>;
+
+    return correctValue[lastSegment];
   }
 }
 

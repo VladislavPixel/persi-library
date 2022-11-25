@@ -15,3 +15,8 @@ export interface IKeyWithPathAndValue {
   path: string;
   value: unknown;
 }
+
+export interface IIterable<T> {
+	[Symbol.iterator](): Iterator<T>;
+	[key: string | number]: T;
+}

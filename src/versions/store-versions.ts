@@ -23,6 +23,8 @@ import type {
   INodePersistent
 } from "../nodes/types/interfaces";
 
+import NodePersistent from "../nodes/node-list/node-persistent-for-list";
+
 export type ValueTypeForRegisterVersion<T> = T extends typeof SET_STRUCTURE
   ? INodePersistentTree
   : T extends typeof RED_BLACK_TREE
@@ -106,7 +108,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
 
     const version = this.snapshots[index];
 
-    if (!(version instanceof Object)) {
+    if (!(version instanceof NodePersistent)) {
       throw new Error(
         `You have entered an invalid version index. The index must be in the range of the number of versions, or must have the value: "+1", "-1" - provided that you originally made a request for some version. At the moment the value under the index you passed is - ${JSON.stringify(
           version
@@ -140,7 +142,10 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return cloneVersion.applyListChanges(this.selectedVersion).value;
   }
 
-  #recApplyListChangeForNode(node, numberVersion) {
+  #recApplyListChangeForNode(
+    node: null | INodePersistent,
+    numberVersion: number
+  ): null | INodePersistent {
     if (node === null) {
       return null;
     }
@@ -155,7 +160,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return updatedNode;
   }
 
-  #searchByVersion(numberVersion: number): null | INodePersistent {
+  #searchByVersion(numberVersion: number): ResultTypeAt<T> {
     let startIndex = 0;
 
     let endIndex = this.snapshots.length - 1;
@@ -164,7 +169,9 @@ class StoreVersions<T> implements IStoreVersions<T> {
       const middleIndex = Math.floor((startIndex + endIndex) / 2);
 
       if (this.snapshots[middleIndex].version === numberVersion) {
-        return this.snapshots[middleIndex].value;
+        const snapshot = this.snapshots[middleIndex];
+
+        return <ResultTypeAt<T>>snapshot.value;
       }
 
       if (this.snapshots[middleIndex].version > numberVersion) {
@@ -174,7 +181,9 @@ class StoreVersions<T> implements IStoreVersions<T> {
       }
     }
 
-    return this.snapshots[Math.floor((startIndex + endIndex) / 2)].value;
+    const snapshot = this.snapshots[Math.floor((startIndex + endIndex) / 2)];
+
+    return <ResultTypeAt<T>>snapshot.value;
   }
 
   #recursivelyCloneAllNodesForTree(
@@ -221,20 +230,25 @@ class StoreVersions<T> implements IStoreVersions<T> {
 
       const cloneNode = node.getClone();
 
-      const recursivelyClone = this.#recursivelyCloneAllNodesForTree(cloneNode);
+      const correctNode = cloneNode as INodePersistentTree;
 
-      return recursivelyClone;
+      const recursivelyClone =
+        this.#recursivelyCloneAllNodesForTree(correctNode);
+
+      return <ResultTypeAt<T>>recursivelyClone;
     }
 
     this.selectedVersion =
       indexVersion === undefined ? this.totalVersions - 1 : index;
 
+    const correctNode = node as INodePersistent;
+
     const nodeForVersion = this.#recApplyListChangeForNode(
-      node,
+      correctNode,
       this.selectedVersion
     );
 
-    return nodeForVersion;
+    return <ResultTypeAt<T>>nodeForVersion;
   }
 
   at(indexVersion?: IndexForAtMethod): ResultTypeAt<T> {

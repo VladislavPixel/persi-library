@@ -2,6 +2,7 @@ import type {
   IIteratorForTraversalTree,
   TypeForResultNextMethodIteratorForTraversalTree
 } from "../types/interfaces";
+
 import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
 class IteratorForDepthForward<T, N> implements IIteratorForTraversalTree<T, N> {

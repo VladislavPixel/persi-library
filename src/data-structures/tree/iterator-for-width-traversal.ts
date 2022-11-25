@@ -1,9 +1,16 @@
-class IteratorForWidthTraversal {
-  #tree;
+import type {
+  IIteratorForTraversalTree,
+  TypeForResultNextMethodIteratorForTraversalTree
+} from "../types/interfaces";
 
-  #arrayNodes;
+import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
-  constructor(tree) {
+class IteratorForWidthTraversal<T, N> implements IIteratorForTraversalTree<T, N> {
+  #tree: null | INodePersistentTree<T, N>;
+
+  #arrayNodes: Array<INodePersistentTree<T, N>>;
+
+  constructor(tree: null | INodePersistentTree<T, N>) {
     this.#tree = tree;
     this.#arrayNodes = [];
     (() => {
@@ -13,11 +20,11 @@ class IteratorForWidthTraversal {
     })();
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTraversalTree<T, N> {
     return this;
   }
 
-  next() {
+  next(): TypeForResultNextMethodIteratorForTraversalTree<T> {
     if (this.#arrayNodes.length === 0) {
       return { value: undefined, done: true };
     }
@@ -25,16 +32,18 @@ class IteratorForWidthTraversal {
     if (this.#arrayNodes.length) {
       const currentNode = this.#arrayNodes.shift();
 
-      if (currentNode.left) {
-        this.#arrayNodes.push(currentNode.left);
+			const correctCurrentNode = currentNode as NonNullable<typeof currentNode>;
+
+      if (correctCurrentNode.left) {
+        this.#arrayNodes.push(correctCurrentNode.left);
       }
 
-      if (currentNode.right) {
-        this.#arrayNodes.push(currentNode.right);
+      if (correctCurrentNode.right) {
+        this.#arrayNodes.push(correctCurrentNode.right);
       }
 
       return {
-        value: currentNode.getCloneValue(currentNode.value),
+        value: correctCurrentNode.getCloneValue(correctCurrentNode.value),
         done: false
       };
     }

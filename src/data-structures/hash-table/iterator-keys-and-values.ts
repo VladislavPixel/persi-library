@@ -1,34 +1,50 @@
 import clone from "../../utils/clone";
+import type { INodePersistent } from "../../nodes/types/interfaces";
+import type { IHashTable } from "../../interafaces";
 
-class IteratorKeysAndValues {
-  #nodeHashTableLatestVersion;
+import type {
+	IteratorKeysAndValuesForHashTable,
+	ResultTypeForIteratorKeysAndValuesForHashTable
+} from "../types/interfaces";
 
-  #arrKeys;
+class IteratorKeysAndValues<T> implements IteratorKeysAndValuesForHashTable<T> {
+  #nodeHashTableLatestVersion: INodePersistent<T>;
 
-  #index;
+  #arrKeys: Array<string>;
 
-  constructor(nodeHashTable) {
+  #index: number;
+
+  constructor(nodeHashTable: INodePersistent<T>) {
     this.#nodeHashTableLatestVersion = nodeHashTable.applyListChanges();
-    this.#arrKeys =
-      typeof this.#nodeHashTableLatestVersion.value === "object"
-        ? Object.keys(this.#nodeHashTableLatestVersion.value)
-        : [];
+    this.#arrKeys = (function(nodePersi: INodePersistent<T>) {
+			if (typeof nodePersi.value === "object") {
+				const value = nodePersi.value as IHashTable<T>;
+
+				return Object.keys(value);
+			}
+
+			return [];
+		}).call(this, this.#nodeHashTableLatestVersion)
     this.#index = 0;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IteratorKeysAndValuesForHashTable<T> {
     return this;
   }
 
-  next() {
+  next(): ResultTypeForIteratorKeysAndValuesForHashTable<T> {
     if (this.#arrKeys.length === 0 || this.#index >= this.#arrKeys.length) {
       return { value: undefined, done: true };
     }
 
+		const key = this.#arrKeys[this.#index];
+
+		const dataHashTable = this.#nodeHashTableLatestVersion.value as IHashTable<T>;
+
     const value = {
       key: this.#arrKeys[this.#index],
       value: clone(
-        this.#nodeHashTableLatestVersion.value[this.#arrKeys[this.#index]]
+        dataHashTable[key]
       )
     };
 

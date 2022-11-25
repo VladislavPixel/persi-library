@@ -1,4 +1,5 @@
 import type { INodePersistentTree } from "../../nodes/types/interfaces";
+
 import type {
   IIteratorForFindMethod,
   TypeForResultNextMethodIteratorForFindMethod

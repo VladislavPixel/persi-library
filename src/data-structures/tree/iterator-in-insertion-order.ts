@@ -1,28 +1,38 @@
 import clone from "../../utils/clone";
 
-class IteratorInInsertionOrder {
-  #root;
+import type {
+	IIteratorForTreeByValue,
+	ResultTypeForIteratorTreeByValue,
+	ISetStructure
+} from "../types/interfaces";
 
-  #index;
+import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
-  #length;
+class IteratorInInsertionOrder<T, N> implements IIteratorForTreeByValue<T, N> {
+  #root: null | INodePersistentTree<T, N>;
 
-  constructor({ root, length }) {
+  #index: number;
+
+  #length: number;
+
+  constructor({ root, length }: ISetStructure<T, N>) {
     this.#root = root;
     this.#index = 0;
     this.#length = length;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTreeByValue<T, N> {
     return this;
   }
 
-  next() {
-    if (this.#index === this.#length) {
+  next(): ResultTypeForIteratorTreeByValue<T> {
+    if (this.#index === this.#length || this.#root === null) {
       return { value: undefined, done: true };
     }
 
-    const node = this.#root.findByKey(this.#index);
+		const correctIndex = this.#index as N;
+
+    const node = this.#root.findByKey(correctIndex);
 
     const value = node ? node.value : node;
 

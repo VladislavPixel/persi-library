@@ -3,18 +3,28 @@ import IteratorEntries from "./iterator-entries";
 import IteratorInInsertionOrder from "./iterator-in-insertion-order";
 import IteratorOverNativeValues from "./iterator-over-native-values";
 import sameValueZero from "../../utils/same-value-zero";
+import type { IIterable } from "../../interafaces";
+import type { ValueTypeForRegisterVersion } from "../../versions/store-versions";
 
-class SetStructure extends RedBlackTree {
-  constructor(iterable) {
+import type {
+	IIteratorForTreeByValue,
+	IIteratorForTreeOverNativeValues,
+	IIteratorForEntries,
+	CallbackFnForEach,
+	ISetStructure
+} from "../types/interfaces";
+
+class SetStructure<T, N> extends RedBlackTree<T, N> implements ISetStructure<T, N> {
+  constructor(iterable: IIterable<T>) {
     super();
     this.#initialization(iterable);
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForTreeByValue<T, N> {
     return new IteratorInInsertionOrder(this);
   }
 
-  #getIteratorOverNativeValues() {
+  #getIteratorOverNativeValues(): IIteratorForTreeOverNativeValues<T, N> {
     return new IteratorOverNativeValues(this);
   }
 
@@ -22,27 +32,30 @@ class SetStructure extends RedBlackTree {
     return this.length;
   }
 
-  entries() {
+  entries(): IIteratorForEntries<T, N> {
     return new IteratorEntries(this);
   }
 
-  values() {
+  values(): IIteratorForTreeByValue<T, N> {
     return new IteratorInInsertionOrder(this);
   }
 
-  keys() {
+  keys(): IIteratorForTreeByValue<T, N> {
     return new IteratorInInsertionOrder(this);
   }
 
-  forEach(callbackFn, thisArg = this) {
+  forEach(callbackFn: CallbackFnForEach<T, this>, thisArg: this): void {
+		const context = thisArg ? thisArg : this;
+
     for (const value of this) {
-      callbackFn.call(thisArg, value, value, this);
+			// @ts-expect-error
+			callbackFn.call(context, value, value, this);
     }
   }
 
-  #initialization(iterable) {
+  #initialization(iterable: IIterable<T>): void {
     if (iterable === undefined) {
-      return null;
+      return;
     }
 
     if (iterable[Symbol.iterator] === undefined) {
@@ -66,17 +79,19 @@ class SetStructure extends RedBlackTree {
     this.historyChanges.registerChange(itemHistory);
 
     for (const valueInitData of iterable) {
-      this.add(valueInitData);
+			this.add(valueInitData);
     }
 
     this.versions.removeVersions();
 
-    this.versions.registerVersion(this.root, this.totalVersions);
+		const correctRoot = <ValueTypeForRegisterVersion<typeof this.constructor.name>><unknown>this.root;
+
+    this.versions.registerVersion(correctRoot, this.totalVersions);
 
     this.versions.totalVersions++;
   }
 
-  has(value) {
+  has(value: T): boolean {
     if (this.length === 0) {
       return false;
     }
@@ -92,15 +107,17 @@ class SetStructure extends RedBlackTree {
     return false;
   }
 
-  add(value) {
+  add(value: T): number {
     if (!this.has(value)) {
-      this.insert(value, this.length, { nameMethodForHistory: "add" });
+			const correctIndex = this.length as N;
+
+      this.insert(value, correctIndex, { nameMethodForHistory: "add" });
     }
 
     return this.length;
   }
 
-  clear() {
+  clear(): void {
     const itemHistory = {
       type: "cleaning the structure",
       nameMethod: "clear",
