@@ -22,18 +22,18 @@ import type {
   IOptionsForInsertRedBlackTree
 } from "../types/interfaces";
 
-import type { IHistoryChanges } from "../../history/history-changes";
+import type { IHistoryChanges } from "../../history/types/interfaces";
 
-type ResultTypeForRecLookPlaceAndInsert<T = unknown, N = unknown> = {
+interface ResultTypeForRecLookPlaceAndInsert<T = unknown, N = unknown> {
   children: INodePersistentTree<T, N>;
   brokeRuleStatus: null | boolean;
   grandson: null | INodePersistentTree<T, N>;
-};
+}
 
-type ResultTypeCheckGrandson = {
+interface ResultTypeCheckGrandson {
   isExternalGrandson: boolean;
   isLeft: boolean;
-};
+}
 
 export type CallbackFnMiddleware<T, N> = (
   tree: INodePersistentTree<T, N>
@@ -44,7 +44,7 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
 
   length: number;
 
-	historyChanges: IHistoryChanges;
+  historyChanges: IHistoryChanges;
 
   constructor() {
     this.root = null;
@@ -214,7 +214,7 @@ class RedBlackTree<T, N> implements IRedBlackTree<T, N> {
         };
       }
 
-      if (brokeRuleStatus === false) {
+      if (!brokeRuleStatus) {
         return {
           children: cloneCurrentNode,
           brokeRuleStatus: null,

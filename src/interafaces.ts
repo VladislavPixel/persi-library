@@ -3,3 +3,15 @@ export type IHashTable<T, N extends PropertyKey = PropertyKey> = {
 };
 
 export type IndexForAtMethod = undefined | number | "+1" | "-1";
+
+export interface IChange<T> {
+  path?: string;
+  value?: T;
+  [key: PropertyKey]: unknown;
+}
+
+export interface IKeyWithPathAndValue {
+  [key: PropertyKey]: unknown;
+  path: string;
+  value: unknown;
+}

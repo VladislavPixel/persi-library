@@ -1,4 +1,7 @@
-import { PREFIX_LINK_TO_VALUE, PREFIX_LINK_TO_YOURSELF } from "./constants";
+import {
+  PREFIX_LINK_TO_VALUE,
+  PREFIX_LINK_TO_YOURSELF
+} from "./constants/index";
 
 function fastClone(value) {
   if (!value) {

@@ -11,8 +11,8 @@ export interface IItemHistory {
 }
 
 export interface IHistoryChanges {
-	display(): void;
-	at(indexChange: IndexForAtMethod): IItemHistory;
-	deleteFirstItemHistory(): undefined | IItemHistory;
-	registerChange(item: Omit<IItemHistory, "toJSON" | "getSmallReport">): number;
+  display(): void;
+  at(indexChange: IndexForAtMethod): IItemHistory;
+  deleteFirstItemHistory(): undefined | IItemHistory;
+  registerChange(item: Omit<IItemHistory, "toJSON" | "getSmallReport">): number;
 }

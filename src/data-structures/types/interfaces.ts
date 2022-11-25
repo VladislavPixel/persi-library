@@ -1,6 +1,6 @@
 import type { INodePersistentTree } from "../../nodes/types/interfaces";
 import type { CallbackFnMiddleware } from "../tree/red-black-tree";
-import type { IHistoryChanges } from "../../history/history-changes";
+import type { IHistoryChanges } from "../../history/types/interfaces";
 
 export interface TypeForResultNextMethodIteratorForTraversalTree<T = unknown> {
   done: boolean;
@@ -32,7 +32,7 @@ export interface IOptionsForInsertRedBlackTree {
 export interface IRedBlackTree<T = unknown, N = unknown> {
   root: null | INodePersistentTree<T, N>;
   length: number;
-	historyChanges: IHistoryChanges;
+  historyChanges: IHistoryChanges;
   [Symbol.iterator](): IIteratorForTraversalTree<T, N>;
   getIteratorForDepthSymmetrical(): IIteratorForTraversalTree<T, N>;
   getIteratorForDepthReverse(): IIteratorForTraversalTree<T, N>;

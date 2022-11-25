@@ -1,15 +1,21 @@
-class IteratorNodePersistentByNodes {
-  #nodePersistent;
+import type {
+  IIteratorForNode,
+  INodePersistent,
+  TypeResultIteratorForNode
+} from "../types/interfaces";
 
-  constructor(node) {
+class IteratorNodePersistentByNodes<T> implements IIteratorForNode<T> {
+  #nodePersistent: null | INodePersistent<T>;
+
+  constructor(node: null | INodePersistent<T>) {
     this.#nodePersistent = node;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForNode<T> {
     return this;
   }
 
-  next() {
+  next(): TypeResultIteratorForNode<T> {
     if (this.#nodePersistent === null) {
       return { value: undefined, done: true };
     }

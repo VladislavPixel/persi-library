@@ -2,7 +2,20 @@ import IteratorNodePersistentByNodes from "./iterator-node-persistent-by-nodes";
 import IteratorReverseOverNodes from "./iterator-reverse-over-nodes";
 import clone from "../../utils/clone";
 import isIdentical from "../../utils/is-identical";
-import type { INodePersistent } from "../types/interfaces";
+
+import type {
+  INodePersistent,
+  IIteratorForNode,
+  TypeResultForCloneCascading,
+  TypeResultForMethodGetValueByPathForList,
+  TypeResultSetForList
+} from "../types/interfaces";
+
+import type {
+  IChange,
+  IKeyWithPathAndValue,
+  IHashTable
+} from "../../interafaces";
 
 class NodePersistent<T> implements INodePersistent<T> {
   value: T;
@@ -13,7 +26,7 @@ class NodePersistent<T> implements INodePersistent<T> {
 
   MAX_CHANGES: number;
 
-  changeLog: Map<>;
+  changeLog: Map<number, IChange<T>>;
 
   constructor(value: T) {
     this.value = value;
@@ -23,15 +36,15 @@ class NodePersistent<T> implements INodePersistent<T> {
     this.changeLog = new Map();
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForNode<T> {
     return new IteratorNodePersistentByNodes(this);
   }
 
-  resetChangeLog() {
+  resetChangeLog(): void {
     this.changeLog.clear();
   }
 
-  getFirstNode() {
+  getFirstNode(): undefined | INodePersistent<T> {
     const iterator = new IteratorReverseOverNodes(this);
 
     let result;
@@ -43,21 +56,30 @@ class NodePersistent<T> implements INodePersistent<T> {
     return result;
   }
 
-  findByKey(key) {
+  findByKey(key: unknown): undefined | null | INodePersistent<T> {
     for (const node of this) {
       if (typeof key === "object") {
-        const { path, value } = key;
+        const correctKey = key as IKeyWithPathAndValue;
+        const { path, value } = correctKey;
+
+        if (node === undefined) {
+          throw new Error(
+            "An unexpected error occurred in the persistent node. Method findByKey. Node === undefined."
+          );
+        }
 
         try {
           const { value: val, lastSegment } = node.getValueByPath(path);
 
-          if (val && isIdentical(val[lastSegment], value)) {
+          const correctVal = val as IHashTable<T>;
+
+          if (val && isIdentical(correctVal[lastSegment], value)) {
             return node;
           }
         } catch (err) {
           continue;
         }
-      } else if (isIdentical(node.value, key)) {
+      } else if (node && isIdentical(node.value, key)) {
         return node;
       }
     }
@@ -65,7 +87,7 @@ class NodePersistent<T> implements INodePersistent<T> {
     return null;
   }
 
-  addChange(numberVersion, change) {
+  addChange(numberVersion: number, change: IChange<T>): number {
     if ("path" in change) {
       this.changeLog.set(numberVersion, {
         value: change.value,
@@ -78,7 +100,11 @@ class NodePersistent<T> implements INodePersistent<T> {
     return this.changeLog.size;
   }
 
-  cloneCascading(node, totalVersion, change) {
+  cloneCascading(
+    node: null | INodePersistent<T>,
+    totalVersion: number,
+    change: IChange<T>
+  ): TypeResultForCloneCascading<T> {
     if (node === null) {
       return { updatedNode: null, firstNode: null, lastNode: null };
     }
@@ -131,19 +157,23 @@ class NodePersistent<T> implements INodePersistent<T> {
   getClone(): INodePersistent<T> {
     const cloneNode = Object.assign(new NodePersistent(0), this);
 
-    clone.value = clone(clone.value);
+    cloneNode.value = clone(cloneNode.value);
 
     return cloneNode;
   }
 
-  getCloneValue(valueNode) {
+  getCloneValue(valueNode: T): T {
     return clone(valueNode);
   }
 
-  getValueByPath(path) {
+  getValueByPath(path: string): TypeResultForMethodGetValueByPathForList<T> {
     const arrSegments = path.split("/");
 
-    let currentValue = this;
+    if (arrSegments.length === 0) {
+      return { value: this, lastSegment: "" };
+    }
+
+    let currentValue = this as any;
 
     currentValue.value = this.getCloneValue(currentValue.value);
 
@@ -154,7 +184,9 @@ class NodePersistent<T> implements INodePersistent<T> {
         );
       }
 
-      currentValue = currentValue[arrSegments[m]];
+      const key = arrSegments[m] as keyof INodePersistent<T>;
+
+      currentValue = currentValue[key];
     }
 
     if (currentValue === undefined) {
@@ -175,7 +207,7 @@ class NodePersistent<T> implements INodePersistent<T> {
     };
   }
 
-  applyListChanges(numberVersion) {
+  applyListChanges(numberVersion?: number): INodePersistent<T> {
     let newNode = new NodePersistent(this.value);
 
     newNode.next = this.next;
@@ -189,7 +221,7 @@ class NodePersistent<T> implements INodePersistent<T> {
 
       const change = item[1];
 
-      if ("path" in change) {
+      if (change.path !== undefined) {
         const { value: dataValue, lastSegment } = newNode.getValueByPath(
           change.path
         );
@@ -200,7 +232,10 @@ class NodePersistent<T> implements INodePersistent<T> {
           continue;
         }
 
-        dataValue[lastSegment] = change.value;
+        const correctDataValue = dataValue as IHashTable<T>;
+
+        // @ts-expect-error
+        correctDataValue[lastSegment] = change.value;
       } else {
         newNode = Object.assign(newNode, change);
       }
@@ -209,11 +244,18 @@ class NodePersistent<T> implements INodePersistent<T> {
     return newNode;
   }
 
-  set(configForValueNode, numberVersion) {
+  set(
+    configForValueNode: IChange<T>,
+    numberVersion: number
+  ): TypeResultSetForList<T> {
     if ("path" in configForValueNode) {
+      const correctConfig = configForValueNode as Required<
+        typeof configForValueNode
+      >;
+
       const nodeLatestVersion = this.applyListChanges();
 
-      nodeLatestVersion.getValueByPath(configForValueNode.path);
+      nodeLatestVersion.getValueByPath(correctConfig.path);
     }
 
     const { updatedNode, firstNode, lastNode } = this.cloneCascading(

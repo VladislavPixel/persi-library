@@ -5,10 +5,10 @@ import IteratorForWidthTraversal from "../../data-structures/tree/iterator-for-w
 import IteratorForFindMethod from "../../data-structures/tree/iterator-for-find-method";
 import clone from "../../utils/clone";
 import isIdentical from "../../utils/is-identical";
-import type { IHashTable } from "../../interafaces";
+
 import type {
   INodePersistentTree,
-  TypeResultForMethodGetValueByPath
+  TypeResultForMethodGetValueByPathForTree
 } from "../types/interfaces";
 
 import type {
@@ -67,49 +67,43 @@ class NodePersistentTree<T, N> implements INodePersistentTree<T, N> {
     return cloneNode;
   }
 
-  getValueByPath(path: string): TypeResultForMethodGetValueByPath<T> {
+  getValueByPath(path: string): TypeResultForMethodGetValueByPathForTree<T, N> {
     const arrSegments = path.split("/");
 
-    let currentNode = this;
-
-    let valueForCurrentNode = currentNode.value;
-
-    valueForCurrentNode = this.getCloneValue(valueForCurrentNode);
-
-    for (let m = 0; m < arrSegments.length - 1; m++) {
-      if (valueForCurrentNode === undefined) {
-        throw new Error(
-          "It is not possible to access the value in the specified path. The value does not contain such nesting."
-        );
-      }
-
-      const key = arrSegments[m];
-
-      if (typeof valueForCurrentNode === "object") {
-        const correctValue = valueForCurrentNode as IHashTable<T, string>;
-
-        valueForCurrentNode = correctValue[key];
-      } else {
-        throw new Error(
-          "It is not possible to access the value in the specified path. The value does not contain such nesting."
-        );
-      }
+    if (arrSegments.length === 0) {
+      return { value: this, lastSegment: "" };
     }
 
-    if (valueForCurrentNode === undefined) {
+    let currentValue = this as any;
+
+    currentValue.value = this.getCloneValue(currentValue.value);
+
+    for (let m = 0; m < arrSegments.length - 1; m++) {
+      if (currentValue === undefined) {
+        throw new Error(
+          "It is not possible to access the value in the specified path. The value does not contain such nesting."
+        );
+      }
+
+      const key = arrSegments[m] as keyof INodePersistentTree<T, N>;
+
+      currentValue = currentValue[key];
+    }
+
+    if (currentValue === undefined) {
       throw new Error(
         "It is not possible to access the value in the specified path. The value does not contain such nesting."
       );
     }
 
-    if (typeof valueForCurrentNode !== "object") {
+    if (typeof currentValue !== "object") {
       throw new Error(
         "Writing a new value is not possible because the value does not meet the required levels."
       );
     }
 
     return {
-      value: valueForCurrentNode,
+      value: currentValue,
       lastSegment: arrSegments[arrSegments.length - 1]
     };
   }

@@ -1,9 +1,6 @@
 import ItemHistory from "./item-history";
 
-import type {
-	IHistoryChanges,
-	IItemHistory
-} from "./types/interfaces";
+import type { IHistoryChanges, IItemHistory } from "./types/interfaces";
 
 import type { IndexForAtMethod } from "../interafaces";
 

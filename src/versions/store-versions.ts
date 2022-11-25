@@ -11,26 +11,32 @@ import {
 } from "../utils/constants/index";
 
 import type {
-	IItemVersion,
-	IStoreVersions
+  IItemVersion,
+  IStoreVersions,
+  ResultTypeAt
 } from "./types/interfaces";
 
 import type { IndexForAtMethod } from "../interafaces";
-import type {
-	INodePersistentTree,
-	INodePersistent
-} from "../nodes/types/interfaces"
 
-export type ValueTypeForRegisterVersion<T> = T extends typeof SET_STRUCTURE ? INodePersistentTree : T extends typeof RED_BLACK_TREE ? INodePersistentTree : INodePersistent;
+import type {
+  INodePersistentTree,
+  INodePersistent
+} from "../nodes/types/interfaces";
+
+export type ValueTypeForRegisterVersion<T> = T extends typeof SET_STRUCTURE
+  ? INodePersistentTree
+  : T extends typeof RED_BLACK_TREE
+  ? INodePersistentTree
+  : INodePersistent;
 
 class StoreVersions<T> implements IStoreVersions<T> {
-	typeStructure: T;
+  typeStructure: T;
 
-	selectedVersion: number;
+  selectedVersion: number;
 
-	totalVersions: number;
+  totalVersions: number;
 
-	snapshots: IItemVersion<T>[];
+  snapshots: Array<IItemVersion<T>>;
 
   constructor(typeStructure: T) {
     this.typeStructure = typeStructure;
@@ -95,7 +101,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return -1;
   }
 
-  #atForHashTable(indexVersion?: IndexForAtMethod): null | INodePersistent {
+  #atForHashTable(indexVersion?: IndexForAtMethod): ResultTypeAt<T> {
     const index = this.#getCorrectIndex(indexVersion);
 
     const version = this.snapshots[index];
@@ -108,9 +114,9 @@ class StoreVersions<T> implements IStoreVersions<T> {
       );
     }
 
-		if (version.value === null) {
-			return version.value;
-		}
+    if (version.value === null) {
+      return version.value;
+    }
 
     const cloneVersion = version.value.getClone();
 
@@ -149,7 +155,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return updatedNode;
   }
 
-  #searchByVersion(numberVersion) {
+  #searchByVersion(numberVersion: number): null | INodePersistent {
     let startIndex = 0;
 
     let endIndex = this.snapshots.length - 1;
@@ -171,7 +177,9 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return this.snapshots[Math.floor((startIndex + endIndex) / 2)].value;
   }
 
-  #recursivelyCloneAllNodesForTree(tree) {
+  #recursivelyCloneAllNodesForTree(
+    tree: null | INodePersistentTree
+  ): null | INodePersistentTree {
     if (tree === null) {
       return null;
     }
@@ -185,7 +193,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return clone;
   }
 
-  #atForPointerMachineModel(indexVersion?: IndexForAtMethod) {
+  #atForPointerMachineModel(indexVersion?: IndexForAtMethod): ResultTypeAt<T> {
     const index = this.#getCorrectIndex(indexVersion);
 
     if (index < 0 || index > this.totalVersions - 1) {
@@ -229,7 +237,7 @@ class StoreVersions<T> implements IStoreVersions<T> {
     return nodeForVersion;
   }
 
-  at(indexVersion: IndexForAtMethod) {
+  at(indexVersion?: IndexForAtMethod): ResultTypeAt<T> {
     if (this.snapshots.length === 0) {
       throw new Error(
         "The versions store is Empty. Operation at() is not supported."
@@ -255,7 +263,10 @@ class StoreVersions<T> implements IStoreVersions<T> {
     }
   }
 
-  registerVersion(value: null | ValueTypeForRegisterVersion<T>, numberVersion: number): number {
+  registerVersion(
+    value: null | ValueTypeForRegisterVersion<T>,
+    numberVersion: number
+  ): number {
     this.snapshots.push({ value, version: numberVersion });
 
     return this.snapshots.length;

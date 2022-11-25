@@ -7,7 +7,7 @@ import type { INodePersistentTree } from "../../nodes/types/interfaces";
 class IteratorForDepthForward<T, N> implements IIteratorForTraversalTree<T, N> {
   #tree: null | INodePersistentTree<T, N>;
 
-  #arrayNodes: INodePersistentTree<T, N>[];
+  #arrayNodes: Array<INodePersistentTree<T, N>>;
 
   #auxiliaryTree: null | INodePersistentTree<T, N>;
 

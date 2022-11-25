@@ -38,6 +38,8 @@
     "no-self-compare": 0,
     "dot-notation": 0,
     "no-extend-native": 0,
+    "@typescript-eslint/no-this-alias": 0,
+    "@typescript-eslint/consistent-type-assertions": 0,
     "@typescript-eslint/lines-between-class-members": [
       "error",
       "always",
