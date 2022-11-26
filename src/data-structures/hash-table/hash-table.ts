@@ -7,7 +7,13 @@ import type { IHashTableStructure } from "../types/interfaces";
 import type { INodePersistent } from "../../nodes/types/interfaces";
 import type { IStoreVersions } from "../../versions/types/interfaces";
 import type { IHistoryChanges } from "../../history/types/interfaces";
-import type { IIterable, IHashTable } from "../../interafaces";
+
+import type {
+	IIterable,
+	IHashTable,
+	IChange
+} from "../../interafaces";
+
 import type { IteratorKeysAndValuesForHashTable } from "../types/interfaces";
 
 class HashTable<T> implements IHashTableStructure<T> {
@@ -110,7 +116,7 @@ class HashTable<T> implements IHashTableStructure<T> {
     return nodeHashTable;
   }
 
-  set(configChange) {
+  set(configChange: T | IChange<T>): number {
     const isObject = typeof configChange === "object";
 
     const mapArgumentsForHistory = new Map().set(1, configChange);
@@ -125,15 +131,22 @@ class HashTable<T> implements IHashTableStructure<T> {
 
     this.historyChanges.registerChange(itemHistory);
 
-    const clone =
-      this.versions.snapshots[
-        this.versions.snapshots.length - 1
-      ].value.getClone();
+		const snapshot = this.versions.snapshots[this.versions.snapshots.length - 1];
+
+		if (!snapshot.value) {
+			throw new Error("An unexpected error has occurred, hashTable has a null version cast.");
+		}
+
+    const clone = snapshot.value.getClone() as INodePersistent<T>;
 
     const cloneLatestVersion = clone.applyListChanges();
 
-    if (isObject && configChange.path !== undefined) {
-      cloneLatestVersion.getValueByPath(configChange.path);
+    if (isObject) {
+			const correctConfigChange = configChange as IChange<T>;
+
+			if (correctConfigChange.path !== undefined) {
+				cloneLatestVersion.getValueByPath(correctConfigChange.path);
+			}
     }
 
     if (this.#structure.changeLog.size === this.#structure.MAX_CHANGES) {
@@ -142,12 +155,14 @@ class HashTable<T> implements IHashTableStructure<T> {
       this.versions.registerVersion(this.#structure, this.totalVersions);
     }
 
+		const correctConfigChange = configChange as IChange<T>;
+
     const correctChange =
-      isObject && configChange.path === undefined
+      (isObject && correctConfigChange.path === undefined
         ? { ...configChange, path: "value" }
-        : isObject && configChange.path !== undefined
+        : isObject && correctConfigChange.path !== undefined
         ? configChange
-        : { value: configChange };
+        : { value: configChange }) as IChange<T>;
 
     this.#structure.addChange(this.totalVersions, correctChange);
 
@@ -156,7 +171,7 @@ class HashTable<T> implements IHashTableStructure<T> {
     return this.totalVersions;
   }
 
-  get(numberVersion, path) {
+  get(numberVersion: number, path: string): null | T {
     const isNumber = typeof numberVersion === "number";
 
     const mapArgumentsForHistory = new Map().set(1, numberVersion).set(2, path);
@@ -184,13 +199,21 @@ class HashTable<T> implements IHashTableStructure<T> {
 
     const correctIndex = numberVersion <= 4 ? 0 : Math.floor(numberVersion / 4);
 
-    const clone = this.versions.snapshots[correctIndex].value
+		const snapshot = this.versions.snapshots[correctIndex];
+
+		if (!snapshot.value) {
+			return snapshot.value;
+		}
+
+    const clone = snapshot.value
       .getClone()
       .applyListChanges(numberVersion);
 
     const { value, lastSegment } = clone.getValueByPath(path);
 
-    return value[lastSegment];
+		const correctValue = value as IHashTable<T>;
+
+    return correctValue[lastSegment];
   }
 }
 

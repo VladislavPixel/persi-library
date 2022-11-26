@@ -4,6 +4,7 @@ import type { IHistoryChanges } from "../../history/types/interfaces";
 import type { IStoreVersions } from "../../versions/types/interfaces";
 import type StoreVersions from "../../versions/store-versions";
 import type HashTable from "../hash-table/hash-table";
+import type { IChange } from "../../interafaces";
 
 export interface TypeForResultNextMethodIteratorForTraversalTree<T = unknown> {
   done: boolean;
@@ -115,4 +116,6 @@ export interface IHashTableStructure<T = unknown> {
 	historyChanges: IHistoryChanges;
 	get totalVersions(): number;
 	[Symbol.iterator](): IteratorKeysAndValuesForHashTable<T>;
+	get(numberVersion: number, path: string): null | T;
+	set(configChange: T | IChange<T>): number;
 }

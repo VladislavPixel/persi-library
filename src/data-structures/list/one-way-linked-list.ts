@@ -5,7 +5,7 @@ import IteratorForNewAndOldNodes from "./iterator-for-new-and-old-nodes";
 import NodePersistent from "../../nodes/node-list/node-persistent-for-list";
 import getResultComposeMiddleware from "../../utils/get-result-compose-middleware";
 import isIdentical from "../../utils/is-identical";
-import { ONE_WAY_LINKED_LIST } from "../../utils/constants";
+import { ONE_WAY_LINKED_LIST } from "../../utils/constants/index";
 
 class OneWayLinkedList {
   constructor(iterable) {
