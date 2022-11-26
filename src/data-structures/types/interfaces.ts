@@ -200,3 +200,10 @@ export interface IQueue<T> {
 	peekFirst(): T;
 	remove(): T;
 }
+
+export interface IStack<T> {
+	get size(): number;
+	push(value: T): number;
+	pop(): T;
+	peek(): T;
+}

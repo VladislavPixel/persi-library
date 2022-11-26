@@ -1,38 +1,58 @@
 import DoublyLinkedList from "./doubly-linked-list";
 
-class Stack extends DoublyLinkedList {
+import type {
+	IStack,
+	ReturnTypeForAddOperationParent,
+	ReturnTypeForDeleteOperationParent
+} from "../types/interfaces";
+
+import NodePersistent from "../../nodes/node-list/node-persistent-for-list";
+
+class Stack<T> extends DoublyLinkedList<T> implements IStack<T> {
   constructor() {
     super();
   }
 
-  get size() {
+  get size(): number {
     return this.length;
   }
 
-  push(value) {
-    const { newLength } = super.addFirst(value);
+  push(value: T): number {
+    const resultParent = super.addFirst(value);
+
+		if (typeof resultParent === "number") {
+			throw new Error("Something wrong.");
+		}
+
+		const { newLength } = resultParent as ReturnTypeForAddOperationParent<T>;
 
     return newLength;
   }
 
-  pop() {
+  pop(): T {
     if (this.size === 0) {
       throw new Error(
         "Operation pop is not supported in Empty structure. It is necessary to add a value, and after that call the removal."
       );
     }
 
-    const { result } = super.deleteFirst();
+    const resultParent = super.deleteFirst();
+
+		if (resultParent instanceof NodePersistent<T>) {
+			throw new Error("Something wrong");
+		}
+
+		const { result } = resultParent as ReturnTypeForDeleteOperationParent<T>;
 
     return result.value;
   }
 
-  peek() {
+  peek(): T {
     if (this.size === 0) {
       throw new Error("Operation peek is not supported in Empty structure.");
     }
 
-    const nodeLatestVersion = this.head.applyListChanges();
+    const nodeLatestVersion = this.head!.applyListChanges();
 
     const clone = nodeLatestVersion.getClone();
 
