@@ -1,15 +1,22 @@
-class IteratorForReverseValueLastVersion {
-  #tailList;
+import type {
+	IIteratorForListValue,
+	ResultTypeForIteratorListValue
+} from "../types/interfaces";
 
-  constructor(tailList) {
+import type { INodePersistent } from "../../nodes/types/interfaces";
+
+class IteratorForReverseValueLastVersion<T> implements IIteratorForListValue<T> {
+  #tailList: null | INodePersistent<T>;
+
+  constructor(tailList: null | INodePersistent<T>) {
     this.#tailList = tailList;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForListValue<T> {
     return this;
   }
 
-  next() {
+  next(): ResultTypeForIteratorListValue<T> {
     if (this.#tailList === null) {
       return { value: undefined, done: true };
     }

@@ -189,3 +189,7 @@ export interface ITwoWayLinkedList<T> {
 	deleteLast(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T>;
 	set(configForValueNode: IChange<T>, middlewareS?: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T>;
 }
+
+export interface IDoublyLinkedList<T> {
+	getIteratorForReverseValueLastVersion(): IIteratorForListValue<T>;
+}
