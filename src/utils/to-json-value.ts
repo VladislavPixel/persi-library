@@ -1,14 +1,16 @@
-const toJSONValue = (value) => {
+const toJSONValue = <T>(value: T): string | T => {
   if (typeof value !== "object" && typeof value !== "function") {
     return value;
   }
 
+	// @ts-expect-error
   const saveToJSONFunction = Function.prototype["toJSON"];
 
   function toJSON() {
     return `function(){}`;
   }
 
+	// @ts-expect-error
   Function.prototype["toJSON"] = toJSON;
 
   let result = "";
@@ -27,6 +29,7 @@ const toJSONValue = (value) => {
 
   result += JSON.stringify(value);
 
+	// @ts-expect-error
   Function.prototype["toJSON"] = saveToJSONFunction;
 
   return result;

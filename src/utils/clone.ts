@@ -3,9 +3,11 @@ import {
   PREFIX_LINK_TO_YOURSELF
 } from "./constants/index";
 
-function fastClone(value) {
+type ValMap = Map<string | Date | Function, string | Date | Function>;
+
+function fastClone(value: unknown): object {
   if (!value) {
-    return value;
+    return <object>value;
   }
 
   if (typeof value === "function") {
@@ -71,9 +73,10 @@ function fastClone(value) {
 
   const dateToJSON = Date.prototype.toJSON;
 
+	// @ts-expect-error
   const functionToJSON = Function.prototype["toJSON"];
 
-  function toJSON() {
+  function toJSON(this: Date | Function) {
     const key = valMap.get(this) ?? `${PREFIX_LINK_TO_VALUE}${Math.random()}]]`;
 
     valMap.set(this, key);
@@ -85,6 +88,7 @@ function fastClone(value) {
 
   Date.prototype.toJSON = toJSON;
 
+	// @ts-expect-error
   Function.prototype["toJSON"] = toJSON;
 
   const replacer = createSerializer(value);
@@ -95,12 +99,15 @@ function fastClone(value) {
 
   Date.prototype.toJSON = dateToJSON;
 
+	// @ts-expect-error
   Function.prototype["toJSON"] = functionToJSON;
 
   return clone;
 }
 
-function createSerializer(base) {
+type HandlerJSON = (key: string, value: unknown) => unknown;
+
+function createSerializer(base: unknown): HandlerJSON {
   let init = false;
 
   return (key, value) => {
@@ -114,7 +121,7 @@ function createSerializer(base) {
   };
 }
 
-function createParser(base, valMap) {
+function createParser(base: unknown, valMap: ValMap): HandlerJSON {
   return (key, value) => {
     if (value === PREFIX_LINK_TO_YOURSELF) {
       return base;
@@ -136,7 +143,7 @@ function createParser(base, valMap) {
   };
 }
 
-function clone(value) {
+function clone<T>(value: T): T {
   let clone;
 
   try {

@@ -1,4 +1,4 @@
-function isIdentical(value1, value2) {
+function isIdentical<T>(value1: T, value2: T): boolean {
   const value1IsNaN = Number.isNaN(value1);
 
   const value2IsNaN = Number.isNaN(value2);

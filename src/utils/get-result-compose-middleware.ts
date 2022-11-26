@@ -1,7 +1,10 @@
+import type { ResultTypeAt } from "../versions/types/interfaces";
+
 import NodePersistent from "../nodes/node-list/node-persistent-for-list";
 import NodePersistentTree from "../nodes/node-tree/node-persistent-for-tree";
 
-function getResultComposeMiddleware(middlewareS) {
+
+function getResultComposeMiddleware<T, N>(this: ResultTypeAt<T>, middlewareS: any) {
   let result;
 
   let index = 0;
