@@ -2,7 +2,6 @@ import DoublyLinkedList from "./doubly-linked-list";
 
 import type {
 	IQueue,
-	ReturnTypeForAddOperationParent,
 	ReturnTypeForDeleteOperationParent
 } from "../types/interfaces";
 
@@ -25,7 +24,7 @@ class Queue<T> extends DoublyLinkedList<T> implements IQueue<T> {
 				throw new Error("Something wrong");
 			}
 
-			const { newLength } = resultParent as ReturnTypeForAddOperationParent<T>;
+			const { newLength } = resultParent;
 
       return newLength;
     }
@@ -36,7 +35,7 @@ class Queue<T> extends DoublyLinkedList<T> implements IQueue<T> {
 			throw new Error("Something wrong");
 		}
 
-		const { newLength } = resultParent as ReturnTypeForAddOperationParent<T>;
+		const { newLength } = resultParent;
 
     return newLength;
   }

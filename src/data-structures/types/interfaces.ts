@@ -201,6 +201,16 @@ export interface IQueue<T> {
 	remove(): T;
 }
 
+export interface IDecQueue<T> {
+	get size(): number;
+	insertFirst(value: T): number;
+	insertLast(value: T): number;
+	removeFirst(): T;
+	removeLast(): T;
+	peekLast(): T;
+	peekFirst(): T;
+}
+
 export interface IStack<T> {
 	get size(): number;
 	push(value: T): number;

@@ -2,7 +2,6 @@ import DoublyLinkedList from "./doubly-linked-list";
 
 import type {
 	IStack,
-	ReturnTypeForAddOperationParent,
 	ReturnTypeForDeleteOperationParent
 } from "../types/interfaces";
 
@@ -24,7 +23,7 @@ class Stack<T> extends DoublyLinkedList<T> implements IStack<T> {
 			throw new Error("Something wrong.");
 		}
 
-		const { newLength } = resultParent as ReturnTypeForAddOperationParent<T>;
+		const { newLength } = resultParent;
 
     return newLength;
   }
