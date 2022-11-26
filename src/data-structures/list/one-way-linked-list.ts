@@ -31,7 +31,7 @@ class OneWayLinkedList<T> implements IOneWayLinkedList<T> {
 
 	historyChanges: IHistoryChanges;
 
-  constructor(iterable: IIterable<T>) {
+  constructor(iterable?: IIterable<T>) {
     this.head = null;
     this.length = 0;
     this.versions = new StoreVersions(this.constructor.name);
@@ -51,7 +51,7 @@ class OneWayLinkedList<T> implements IOneWayLinkedList<T> {
     return this.versions.totalVersions;
   }
 
-  initialization(iterable: IIterable<T>): void {
+  initialization(iterable?: IIterable<T>): void {
     const mapArgumentsForHistory = new Map().set(1, iterable);
 
     const itemHistory = {
@@ -234,7 +234,7 @@ class OneWayLinkedList<T> implements IOneWayLinkedList<T> {
     return null;
   }
 
-  set(configForValueNode: IChange<T>, middlewareS: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T> {
+  set(configForValueNode: IChange<T>, middlewareS?: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T> {
     if (this.length === 0) {
       throw new Error("Method - set is not supported in Empty list.");
     }

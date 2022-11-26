@@ -145,7 +145,7 @@ export interface IIteratorForLastAndOldNodes<T> {
 export interface ReturnTypeForAddOperationParent<T> {
 	newLength: number;
 	lastNode: null | INodePersistent<T>;
-	firstNode: INodePersistent<T>;
+	firstNode: null | INodePersistent<T>;
 }
 
 export interface ReturnTypeForDeleteOperationParent<T> {
@@ -169,13 +169,23 @@ export interface IOneWayLinkedList<T> {
 	length: number;
 	versions: IStoreVersions<typeof OneWayLinkedList.constructor.name>;
 	historyChanges: IHistoryChanges;
-	initialization(iterable: IIterable<T>): void;
+	initialization(iterable?: IIterable<T>): void;
 	[Symbol.iterator](): IIteratorForListValue<T>;
 	getIteratorNewAndOldNodes(): IIteratorForLastAndOldNodes<T>;
 	get totalVersions(): number;
 	addFirst(value: T): number | ReturnTypeForAddOperationParent<T>;
 	deleteFirst(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T>;
 	findByKey(key: T): null | INodePersistent<T>;
-	set(configForValueNode: IChange<T>, middlewareS: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T>;
+	set(configForValueNode: IChange<T>, middlewareS?: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T>;
 	get(numberVersion: number, pathNodeValue: string, middlewareS: CallbackFnMiddlewareSForList<T>[]): T;
+}
+
+export interface ITwoWayLinkedList<T> {
+	tail: null | INodePersistent<T>;
+	initialization(iterable?: IIterable<T>): void;
+	addFirst(value: T): number | ReturnTypeForAddOperationParent<T>;
+	deleteFirst(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T>;
+	addLast(value: T): number | ReturnTypeForAddOperationParent<T>;
+	deleteLast(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T>;
+	set(configForValueNode: IChange<T>, middlewareS?: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T>;
 }
