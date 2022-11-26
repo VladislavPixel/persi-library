@@ -193,3 +193,10 @@ export interface ITwoWayLinkedList<T> {
 export interface IDoublyLinkedList<T> {
 	getIteratorForReverseValueLastVersion(): IIteratorForListValue<T>;
 }
+
+export interface IQueue<T> {
+	get size(): number;
+	insert(value: T): number;
+	peekFirst(): T;
+	remove(): T;
+}
