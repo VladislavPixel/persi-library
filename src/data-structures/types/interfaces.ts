@@ -4,7 +4,9 @@ import type { IHistoryChanges } from "../../history/types/interfaces";
 import type { IStoreVersions } from "../../versions/types/interfaces";
 import type StoreVersions from "../../versions/store-versions";
 import type HashTable from "../hash-table/hash-table";
-import type { IChange } from "../../interafaces";
+import type { IChange, IIterable } from "../../interafaces";
+import type { INodePersistent } from "../../nodes/types/interfaces";
+import type OneWayLinkedList from "../list/one-way-linked-list";
 
 export interface TypeForResultNextMethodIteratorForTraversalTree<T = unknown> {
   done: boolean;
@@ -118,4 +120,62 @@ export interface IHashTableStructure<T = unknown> {
 	[Symbol.iterator](): IteratorKeysAndValuesForHashTable<T>;
 	get(numberVersion: number, path: string): null | T;
 	set(configChange: T | IChange<T>): number;
+}
+
+export interface ResultTypeForIteratorListValue<T> {
+	done: boolean;
+	value: undefined | T;
+}
+
+export interface IIteratorForListValue<T> {
+	[Symbol.iterator](): IIteratorForListValue<T>;
+	next(): ResultTypeForIteratorListValue<T>;
+}
+
+export interface ResultTypeForIteratorLastAndOldNodes<T> {
+	done: boolean;
+	value: undefined | { latestVersionN: INodePersistent<T>, stockN: INodePersistent<T> };
+}
+
+export interface IIteratorForLastAndOldNodes<T> {
+	[Symbol.iterator](): IIteratorForLastAndOldNodes<T>;
+	next(): ResultTypeForIteratorLastAndOldNodes<T>;
+}
+
+export interface ReturnTypeForAddOperationParent<T> {
+	newLength: number;
+	lastNode: null | INodePersistent<T>;
+	firstNode: INodePersistent<T>;
+}
+
+export interface ReturnTypeForDeleteOperationParent<T> {
+	newLength: number;
+	lastNode: null | INodePersistent<T>;
+	result: INodePersistent<T>;
+	firstNode: null | INodePersistent<T>;
+}
+
+export type CallbackFnMiddlewareSForList<T> = (list: INodePersistent<T>) => null | INodePersistent<T>;
+
+export interface ReturnTypeForUpdateOperationParent<T> {
+	newTotalVersion: number;
+	updatedNode: null | INodePersistent<T>;
+	firstNode: null | INodePersistent<T>;
+	lastNode: null | INodePersistent<T>;
+}
+
+export interface IOneWayLinkedList<T> {
+	head: null | INodePersistent<T>;
+	length: number;
+	versions: IStoreVersions<typeof OneWayLinkedList.constructor.name>;
+	historyChanges: IHistoryChanges;
+	initialization(iterable: IIterable<T>): void;
+	[Symbol.iterator](): IIteratorForListValue<T>;
+	getIteratorNewAndOldNodes(): IIteratorForLastAndOldNodes<T>;
+	get totalVersions(): number;
+	addFirst(value: T): number | ReturnTypeForAddOperationParent<T>;
+	deleteFirst(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T>;
+	findByKey(key: T): null | INodePersistent<T>;
+	set(configForValueNode: IChange<T>, middlewareS: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T>;
+	get(numberVersion: number, pathNodeValue: string, middlewareS: CallbackFnMiddlewareSForList<T>[]): T;
 }

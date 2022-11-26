@@ -1,15 +1,22 @@
-class IteratorForValueLastVersion {
-  #list;
+import type {
+	IIteratorForListValue,
+	ResultTypeForIteratorListValue
+} from "../types/interfaces";
 
-  constructor(list) {
+import type { INodePersistent } from "../../nodes/types/interfaces";
+
+class IteratorForValueLastVersion<T> implements IIteratorForListValue<T> {
+  #list: null | INodePersistent<T>;
+
+  constructor(list: null | INodePersistent<T>) {
     this.#list = list;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForListValue<T> {
     return this;
   }
 
-  next() {
+  next(): ResultTypeForIteratorListValue<T> {
     if (this.#list === null) {
       return { value: undefined, done: true };
     }

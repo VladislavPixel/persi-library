@@ -20,3 +20,9 @@ export interface IIterable<T> {
 	[Symbol.iterator](): Iterator<T>;
 	[key: string | number]: T;
 }
+
+export interface IKeyForFindByKey<T> {
+	[key: PropertyKey]: unknown;
+	path: string;
+	value: T;
+}

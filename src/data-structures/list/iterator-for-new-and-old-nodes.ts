@@ -1,15 +1,22 @@
-class IteratorForNewAndOldNodes {
-  #list;
+import type {
+	IIteratorForLastAndOldNodes,
+	ResultTypeForIteratorLastAndOldNodes
+} from "../types/interfaces";
 
-  constructor(list) {
+import type { INodePersistent } from "../../nodes/types/interfaces";
+
+class IteratorForNewAndOldNodes<T> implements IIteratorForLastAndOldNodes<T> {
+  #list: null | INodePersistent<T>;
+
+  constructor(list: null | INodePersistent<T>) {
     this.#list = list;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForLastAndOldNodes<T> {
     return this;
   }
 
-  next() {
+  next(): ResultTypeForIteratorLastAndOldNodes<T> {
     if (this.#list === null) {
       return { value: undefined, done: true };
     }

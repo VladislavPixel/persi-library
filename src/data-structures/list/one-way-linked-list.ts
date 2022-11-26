@@ -7,8 +7,31 @@ import getResultComposeMiddleware from "../../utils/get-result-compose-middlewar
 import isIdentical from "../../utils/is-identical";
 import { ONE_WAY_LINKED_LIST } from "../../utils/constants/index";
 
-class OneWayLinkedList {
-  constructor(iterable) {
+import type {
+	IOneWayLinkedList,
+	IIteratorForListValue,
+	IIteratorForLastAndOldNodes,
+	ReturnTypeForAddOperationParent,
+	ReturnTypeForDeleteOperationParent,
+	CallbackFnMiddlewareSForList,
+	ReturnTypeForUpdateOperationParent
+} from "../types/interfaces";
+
+import type { IIterable, IKeyForFindByKey, IHashTable, IChange } from "../../interafaces";
+import type { INodePersistent } from "../../nodes/types/interfaces";
+import type { IStoreVersions } from "../../versions/types/interfaces";
+import type { IHistoryChanges } from "../../history/types/interfaces";
+
+class OneWayLinkedList<T> implements IOneWayLinkedList<T> {
+	head: null | INodePersistent<T>;
+
+	length: number;
+
+	versions: IStoreVersions<typeof this.constructor.name>;
+
+	historyChanges: IHistoryChanges;
+
+  constructor(iterable: IIterable<T>) {
     this.head = null;
     this.length = 0;
     this.versions = new StoreVersions(this.constructor.name);
@@ -16,19 +39,19 @@ class OneWayLinkedList {
     this.initialization(iterable);
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): IIteratorForListValue<T> {
     return new IteratorForValueLastVersion(this.head);
   }
 
-  getIteratorNewAndOldNodes() {
+  getIteratorNewAndOldNodes(): IIteratorForLastAndOldNodes<T> {
     return new IteratorForNewAndOldNodes(this.head);
   }
 
-  get totalVersions() {
+  get totalVersions(): number {
     return this.versions.totalVersions;
   }
 
-  initialization(iterable) {
+  initialization(iterable: IIterable<T>): void {
     const mapArgumentsForHistory = new Map().set(1, iterable);
 
     const itemHistory = {
@@ -46,7 +69,7 @@ class OneWayLinkedList {
 
       this.versions.totalVersions++;
 
-      return null;
+      return;
     }
 
     if (iterable[Symbol.iterator] === undefined) {
@@ -60,7 +83,7 @@ class OneWayLinkedList {
     }
   }
 
-  addFirst(value) {
+  addFirst(value: T): number | ReturnTypeForAddOperationParent<T> {
     const mapArgumentsForHistory = new Map().set(1, value);
 
     const itemHistory = {
@@ -78,8 +101,8 @@ class OneWayLinkedList {
     let lastN = null;
 
     if (this.length !== 0) {
-      if (this.versions.length !== 0) {
-        const { updatedNode, lastNode } = this.head.cloneCascading(
+      if (this.versions.snapshots.length !== 0) {
+        const { updatedNode, lastNode } = this.head!.cloneCascading(
           this.head,
           this.totalVersions,
           { prev: newNode }
@@ -91,7 +114,7 @@ class OneWayLinkedList {
 
         newNode.resetChangeLog();
       } else {
-        this.head.prev = newNode;
+        this.head!.prev = newNode;
       }
 
       newNode.next = this.head;
@@ -112,7 +135,7 @@ class OneWayLinkedList {
     return { newLength: this.length, lastNode: lastN, firstNode: this.head };
   }
 
-  deleteFirst() {
+  deleteFirst(): INodePersistent<T> | ReturnTypeForDeleteOperationParent<T> {
     if (this.length === 0) {
       throw new Error(
         "Deleting the first item from an empty list is not supported. First add the elements."
@@ -131,12 +154,12 @@ class OneWayLinkedList {
 
     this.historyChanges.registerChange(itemHistory);
 
-    const deletedNode = this.head.applyListChanges();
+    const deletedNode = this.head!.applyListChanges();
 
     let lastN = null;
 
     if (deletedNode.next !== null) {
-      const { updatedNode, lastNode } = this.head.cloneCascading(
+      const { updatedNode, lastNode } = this.head!.cloneCascading(
         deletedNode.next,
         this.totalVersions,
         { prev: null }
@@ -167,25 +190,39 @@ class OneWayLinkedList {
     };
   }
 
-  findByKey(key) {
+  findByKey(key: T): null | INodePersistent<T> {
     if (this.length === 0) {
       throw new Error("Method - findByKey is not supported in Empty list.");
     }
 
     const iterator = this.getIteratorNewAndOldNodes();
 
-    for (const { latestVersionN, stockN } of iterator) {
+    for (const configNodes of iterator) {
+			if (configNodes === undefined) {
+				throw new Error("Something went wrong. The iterator is not working correctly.");
+			}
+
+			const { latestVersionN, stockN } = configNodes;
+
       if (typeof key !== "object" && isIdentical(key, latestVersionN.value)) {
         return stockN;
       }
 
       try {
         if (typeof key === "object") {
+					const correctKey = key as IKeyForFindByKey<T>;
+
+					if (correctKey.path === undefined || !("value" in correctKey)) {
+						throw new Error("If the key is an object, it must have a path and value property.");
+					}
+
           const { value, lastSegment } = latestVersionN.getValueByPath(
-            key.path
+            correctKey.path
           );
 
-          if (isIdentical(value[lastSegment], key.value)) {
+					const correctValue = value as IHashTable<T>;
+
+          if (isIdentical(correctValue[lastSegment], correctKey.value)) {
             return stockN;
           }
         }
@@ -197,7 +234,7 @@ class OneWayLinkedList {
     return null;
   }
 
-  set(configForValueNode, middlewareS) {
+  set(configForValueNode: IChange<T>, middlewareS: CallbackFnMiddlewareSForList<T>[]): null | INodePersistent<T> | ReturnTypeForUpdateOperationParent<T> {
     if (this.length === 0) {
       throw new Error("Method - set is not supported in Empty list.");
     }
@@ -217,7 +254,7 @@ class OneWayLinkedList {
     if (middlewareS === undefined) {
       this.historyChanges.registerChange(itemHistory);
 
-      const { updatedNode, firstNode, lastNode } = this.head.set(
+      const { updatedNode, firstNode, lastNode } = this.head!.set(
         configForValueNode,
         this.totalVersions
       );
@@ -277,7 +314,7 @@ class OneWayLinkedList {
     };
   }
 
-  get(numberVersion, pathNodeValue, middlewareS) {
+  get(numberVersion: number, pathNodeValue: string, middlewareS: CallbackFnMiddlewareSForList<T>[]): T {
     if (this.length === 0) {
       throw new Error("Method - get is not supported in Empty list.");
     }
@@ -313,9 +350,11 @@ class OneWayLinkedList {
     if (middlewareS === undefined) {
       const node = this.versions.at(numberVersion);
 
-      const { value, lastSegment } = node.getValueByPath(pathNodeValue);
+      const { value, lastSegment } = node!.getValueByPath(pathNodeValue);
 
-      return value[lastSegment];
+			const correctValue = value as IHashTable<T>;
+
+      return correctValue[lastSegment];
     }
 
     let nodeForVersion = this.versions.at(numberVersion);
@@ -331,7 +370,9 @@ class OneWayLinkedList {
 
     const { value, lastSegment } = nodeForVersion.getValueByPath(pathNodeValue);
 
-    return value[lastSegment];
+		const correctValue = value as IHashTable<T>;
+
+    return correctValue[lastSegment];
   }
 }
 
