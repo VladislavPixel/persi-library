@@ -1,45 +1,48 @@
 {
-  "name": "persi",
-  "version": "1.0.0",
-  "description": "The library provides an API for creating persistent structural data.",
-  "source": "./index.ts",
-  "module": "./dist/main.js",
-  "main": "./dist/common.js",
-  "type": "module",
-  "types": "./dist/types.d.ts",
-  "scripts": {
-    "start": "parcel",
-    "build": "parcel build --no-source-maps --no-cache",
-    "watch": "parcel watch",
-    "format": "npx prettier --write .",
-    "eslint": "eslint .",
-    "tsbuild": "tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/VladislavPixel/library-persi-2.git"
-  },
-  "keywords": [
-    "persi",
-    "data",
-    "data-structure"
-  ],
-  "author": "pixel. <pixel.develop@yandex.ru>",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/VladislavPixel/library-persi-2/issues"
-  },
-  "homepage": "https://github.com/VladislavPixel/library-persi-2#readme",
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.44.0",
-    "@typescript-eslint/parser": "^5.44.0",
-    "eslint": "^8.28.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-config-standard-with-typescript": "^23.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.5.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "parcel": "^2.8.0",
-    "typescript": "^4.9.3"
-  }
+	"name": "persi",
+	"version": "1.0.0",
+	"description": "The library provides an API for creating persistent structural data.",
+	"source": "./index.ts",
+	"module": "./dist/main.js",
+	"main": "./dist/common.js",
+	"type": "module",
+	"types": "./dist/types.d.ts",
+	"scripts": {
+		"start": "parcel",
+		"build": "parcel build --no-source-maps --no-cache",
+		"watch": "parcel watch",
+		"format": "npx prettier --write .",
+		"eslint": "eslint .",
+		"tsbuild": "tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/VladislavPixel/library-persi-2.git"
+	},
+	"keywords": [
+		"persi",
+		"data",
+		"data-structure"
+	],
+	"author": "pixel. <pixel.develop@yandex.ru>",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/VladislavPixel/library-persi-2/issues"
+	},
+	"homepage": "https://github.com/VladislavPixel/library-persi-2#readme",
+	"devDependencies": {
+		"@parcel/packager-ts": "^2.8.0",
+		"@parcel/transformer-typescript-types": "^2.8.0",
+		"@typescript-eslint/eslint-plugin": "^5.44.0",
+		"@typescript-eslint/parser": "^5.44.0",
+		"eslint": "^8.28.0",
+		"eslint-config-standard": "^17.0.0",
+		"eslint-config-standard-with-typescript": "^23.0.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-n": "^15.5.1",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-promise": "^6.1.1",
+		"parcel": "^2.8.0",
+		"typescript": "^4.9.3"
+	}
 }

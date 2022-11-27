@@ -1,15 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "ES2021",
-    "strict": true,
-    "experimentalDecorators": true,
-    "noImplicitOverride": true,
-    "importsNotUsedAsValues": "error",
-    "outDir": "./build-ts",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowJs": true
-  },
-  "exclude": ["node_modules"],
-  "include": ["index.ts"]
+	"compilerOptions": {
+		"target": "ES2021",
+		"strict": true,
+		"experimentalDecorators": true,
+		"noImplicitOverride": true,
+		"importsNotUsedAsValues": "error",
+		"outDir": "./build-ts",
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowJs": true
+	},
+	"exclude": ["node_modules"],
+	"include": ["index.ts"]
 }

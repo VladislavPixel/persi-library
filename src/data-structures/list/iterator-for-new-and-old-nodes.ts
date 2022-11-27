@@ -6,32 +6,38 @@ import type {
 import type { INodePersistent } from "../../nodes/types/interfaces";
 
 class IteratorForNewAndOldNodes<T> implements IIteratorForLastAndOldNodes<T> {
-  #list: null | INodePersistent<T>;
+	#list: null | INodePersistent<T>;
 
-  constructor(list: null | INodePersistent<T>) {
-    this.#list = list;
-  }
+	constructor(list: null | INodePersistent<T>) {
+		this.#list = list;
+	}
 
-  [Symbol.iterator](): IIteratorForLastAndOldNodes<T> {
-    return this;
-  }
+	[Symbol.iterator](): IIteratorForLastAndOldNodes<T> {
+		return this;
+	}
 
-  next(): ResultTypeForIteratorLastAndOldNodes<T> {
-    if (this.#list === null) {
-      return { value: undefined, done: true };
-    }
+	next(): ResultTypeForIteratorLastAndOldNodes<T> {
+		if (this.#list === null) {
+			return {
+				value: undefined,
+				done: true
+			};
+		}
 
-    const current = this.#list;
+		const current = this.#list;
 
-    const currentNodeLatestVersion = this.#list.applyListChanges();
+		const currentNodeLatestVersion = this.#list.applyListChanges();
 
-    this.#list = currentNodeLatestVersion.next;
+		this.#list = currentNodeLatestVersion.next;
 
-    return {
-      value: { latestVersionN: currentNodeLatestVersion, stockN: current },
-      done: false
-    };
-  }
+		return {
+			value: {
+				latestVersionN: currentNodeLatestVersion,
+				stockN: current
+			},
+			done: false
+		};
+	}
 }
 
 export default IteratorForNewAndOldNodes;

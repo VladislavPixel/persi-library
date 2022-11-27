@@ -9,39 +9,50 @@ import type {
 import type { INodePersistentTree } from "../../nodes/types/interfaces";
 
 class IteratorInInsertionOrder<T, N> implements IIteratorForTreeByValue<T, N> {
-  #root: null | INodePersistentTree<T, N>;
+	#root: null | INodePersistentTree<T, N>;
 
-  #index: number;
+	#index: number;
 
-  #length: number;
+	#length: number;
 
-  constructor({ root, length }: ISetStructure<T, N>) {
-    this.#root = root;
-    this.#index = 0;
-    this.#length = length;
-  }
+	constructor({ root, length }: ISetStructure<T, N>) {
+		this.#root = root;
+		this.#index = 0;
+		this.#length = length;
+	}
 
-  [Symbol.iterator](): IIteratorForTreeByValue<T, N> {
-    return this;
-  }
+	[Symbol.iterator](): IIteratorForTreeByValue<T, N> {
+		return this;
+	}
 
-  next(): ResultTypeForIteratorTreeByValue<T> {
-    if (this.#index === this.#length || this.#root === null) {
-      return { value: undefined, done: true };
-    }
+	next(): ResultTypeForIteratorTreeByValue<T> {
+		if (this.#index === this.#length || this.#root === null) {
+			return {
+				value: undefined,
+				done: true
+			};
+		}
 
 		const correctIndex = this.#index as N;
 
-    const node = this.#root.findByKey(correctIndex);
+		const node = this.#root.findByKey(correctIndex);
 
-    const value = node ? node.value : node;
+		if (node === null) {
+			return {
+				value: node,
+				done: false
+			};
+		}
 
-    const cloneValue = clone(value);
+		const cloneValue = clone(node.value);
 
-    this.#index++;
+		this.#index++;
 
-    return { value: cloneValue, done: false };
-  }
+		return {
+			value: cloneValue,
+			done: false
+		};
+	}
 }
 
 export default IteratorInInsertionOrder;

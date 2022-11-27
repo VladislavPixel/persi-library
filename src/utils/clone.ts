@@ -1,158 +1,155 @@
-import {
-  PREFIX_LINK_TO_VALUE,
-  PREFIX_LINK_TO_YOURSELF
-} from "./constants/index";
+import { PREFIX_LINK_TO_VALUE, PREFIX_LINK_TO_YOURSELF } from "./constants/index";
 
 type ValMap = Map<string | Date | Function, string | Date | Function>;
 
-function fastClone(value: unknown): object {
-  if (!value) {
-    return <object>value;
-  }
+function fastClone<T>(value: T): object {
+	if (!value) {
+		return <object>value;
+	}
 
-  if (typeof value === "function") {
-    return value;
-  }
+	if (typeof value === "function") {
+		return value;
+	}
 
-  if (value instanceof Map) {
-    const map = new Map();
+	if (value instanceof Map) {
+		const map = new Map();
 
-    for (const arr of map.entries()) {
-      map.set(arr[0], fastClone(arr[1]));
-    }
+		for (const arr of map.entries()) {
+			map.set(arr[0], fastClone(arr[1]));
+		}
 
-    return map;
-  }
+		return map;
+	}
 
-  if (value instanceof Set) {
-    const set = new Set();
+	if (value instanceof Set) {
+		const set = new Set();
 
-    for (const valSet of set.values()) {
-      set.add(fastClone(valSet));
-    }
+		for (const valSet of set.values()) {
+			set.add(fastClone(valSet));
+		}
 
-    return set;
-  }
+		return set;
+	}
 
-  if (Array.isArray(value)) {
-    if (value.length === 0) {
-      return [];
-    }
+	if (Array.isArray(value)) {
+		if (value.length === 0) {
+			return [];
+		}
 
-    const slice = value.slice();
+		const slice = value.slice();
 
-    let isSimple = true;
+		let isSimple = true;
 
-    for (let i = 0; i < value.length; i++) {
-      const el = value[i];
+		for (let i = 0; i < value.length; i++) {
+			const el = value[i];
 
-      if (typeof el === "object") {
-        if (el instanceof Date) {
-          slice[i] = new Date(el);
-        } else {
-          isSimple = false;
-          break;
-        }
-      }
-    }
+			if (typeof el === "object") {
+				if (el instanceof Date) {
+					slice[i] = new Date(el);
+				} else {
+					isSimple = false;
+					break;
+				}
+			}
+		}
 
-    if (isSimple) {
-      return slice;
-    }
-  }
+		if (isSimple) {
+			return slice;
+		}
+	}
 
-  if (value instanceof Date) {
-    return new Date(value);
-  }
+	if (value instanceof Date) {
+		return new Date(value);
+	}
 
-  if (Object.keys(value).length === 0) {
-    return {};
-  }
+	if (Object.keys(value).length === 0) {
+		return {};
+	}
 
-  const valMap = new Map();
+	const valMap = new Map();
 
-  const dateToJSON = Date.prototype.toJSON;
-
-	// @ts-expect-error
-  const functionToJSON = Function.prototype["toJSON"];
-
-  function toJSON(this: Date | Function) {
-    const key = valMap.get(this) ?? `${PREFIX_LINK_TO_VALUE}${Math.random()}]]`;
-
-    valMap.set(this, key);
-
-    valMap.set(key, this);
-
-    return key;
-  }
-
-  Date.prototype.toJSON = toJSON;
+	const dateToJSON = Date.prototype.toJSON;
 
 	// @ts-expect-error
-  Function.prototype["toJSON"] = toJSON;
+	const functionToJSON = Function.prototype["toJSON"];
 
-  const replacer = createSerializer(value);
+	function toJSON(this: Date | Function): string {
+		const key = valMap.get(this) ?? `${PREFIX_LINK_TO_VALUE}${Math.random()}]]`;
 
-  const reviver = createParser(value, valMap);
+		valMap.set(this, key);
 
-  const clone = JSON.parse(JSON.stringify(value, replacer), reviver);
+		valMap.set(key, this);
 
-  Date.prototype.toJSON = dateToJSON;
+		return key;
+	}
+
+	Date.prototype.toJSON = toJSON;
 
 	// @ts-expect-error
-  Function.prototype["toJSON"] = functionToJSON;
+	Function.prototype["toJSON"] = toJSON;
 
-  return clone;
+	const replacer = createSerializer(value);
+
+	const reviver = createParser(value, valMap);
+
+	const clone = JSON.parse(JSON.stringify(value, replacer), reviver);
+
+	Date.prototype.toJSON = dateToJSON;
+
+	// @ts-expect-error
+	Function.prototype["toJSON"] = functionToJSON;
+
+	return clone;
 }
 
 type HandlerJSON = (key: string, value: unknown) => unknown;
 
 function createSerializer(base: unknown): HandlerJSON {
-  let init = false;
+	let init = false;
 
-  return (key, value) => {
-    if (init && value === base) {
-      value = PREFIX_LINK_TO_YOURSELF;
-    } else {
-      init = true;
-    }
+	return (key, value) => {
+		if (init && value === base) {
+			value = PREFIX_LINK_TO_YOURSELF;
+		} else {
+			init = true;
+		}
 
-    return value;
-  };
+		return value;
+	};
 }
 
 function createParser(base: unknown, valMap: ValMap): HandlerJSON {
-  return (key, value) => {
-    if (value === PREFIX_LINK_TO_YOURSELF) {
-      return base;
-    }
+	return (key, value) => {
+		if (value === PREFIX_LINK_TO_YOURSELF) {
+			return base;
+		}
 
-    if (typeof value === "string" && value.startsWith(PREFIX_LINK_TO_VALUE)) {
-      const resolvedValue = valMap.get(value);
+		if (typeof value === "string" && value.startsWith(PREFIX_LINK_TO_VALUE)) {
+			const resolvedValue = valMap.get(value);
 
-      if (resolvedValue !== undefined) {
-        if (resolvedValue instanceof Date) {
-          return new Date(resolvedValue);
-        }
+			if (resolvedValue !== undefined) {
+				if (resolvedValue instanceof Date) {
+					return new Date(resolvedValue);
+				}
 
-        return resolvedValue;
-      }
-    }
+				return resolvedValue;
+			}
+		}
 
-    return value;
-  };
+		return value;
+	};
 }
 
 function clone<T>(value: T): T {
-  let clone;
+	let clone: T;
 
-  try {
-    clone = structuredClone(value);
-  } catch (err) {
-    clone = fastClone(value);
-  }
+	try {
+		clone = structuredClone(value);
+	} catch (err) {
+		clone = <T>fastClone(value);
+	}
 
-  return clone;
+	return clone;
 }
 
 export default clone;
